@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[CLASIFICADO] Dossier: Diluvio Escarlata</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: #0a0a0a;
+            color: #00ff41;
+            text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
+        }
+        .content-scanlines::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: -1; 
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+            animation: scan 7.5s linear infinite;
+        }
+        @keyframes scan {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100vh; }
+        }
+        .terminal-glow {
+            box-shadow: 0 0 15px #00ff41;
+        }
+        .input-field {
+            background-color: #051805;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            text-shadow: 0 0 3px #00ff41;
+        }
+        .input-field::placeholder {
+            color: #009927;
+            opacity: 0.7;
+        }
+        .action-button {
+            border: 1px solid #00ff41;
+            box-shadow: 0 0 5px #00ff41;
+            transition: all 0.3s ease;
+        }
+        .action-button:hover {
+            background-color: #00ff41;
+            color: #0a0a0a;
+            text-shadow: none;
+        }
+        #mission-details-container {
+            display: none;
+        }
+        .countdown-digits {
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 relative content-scanlines">
+
+    <div class="border-2 border-green-400 p-4 md:p-6 terminal-glow max-w-4xl mx-auto">
+        <header class="text-center mb-6">
+            <h1 class="text-2xl md:text-4xl font-bold">[ DOSSIER: DILUVIO ESCARLATA ]</h1>
+            <p class="text-sm">ACCESO CONCEDIDO: USUARIO_██████</p>
+            <div class="w-full h-px bg-green-400 my-3"></div>
+        </header>
+
+        <main id="main-content" class="space-y-8">
+            
+            <section id="prelude-text">
+                <h2 class="text-xl font-bold mb-3 text-center">[INICIO DE TRANSMISIÓN // ALERTA GLOBAL]</h2>
+                <p class="mb-4">El día en que el cielo se rompió, la lluvia comenzó y simplemente… no paró.</p>
+                <p class="mb-4">Al principio, la gente culpó a la temporada de huracanes, inusualmente violenta. Otros, con voz temblorosa, susurraban que era el cambio climático desatado, la antesala del fin del mundo. Nosotros, la gente de la noche, no teníamos respuestas certeras, solo un presentimiento helado que recorría la sangre estancada en nuestras venas.</p>
+                <p class="mb-4">Semanas. Semanas de un aguacero implacable, un llanto constante del cielo.</p>
+                <p class="mb-4">Fue entonces cuando los más viejos, aquellos que aún recuerdan los ecos de otros eones, comenzaron a murmurar el nombre prohibido, la oscura profecía:</p>
+                <p class="text-center text-2xl my-6 animate-pulse">"—Son las Lágrimas de Kain…"</p>
+                <p class="mb-4">Esto no era una simple tormenta. Era un diluvio. Un castigo divino o infernal, ¿quién podría decirlo?</p>
+            </section>
+
+            <div class="w-full h-px bg-green-400 my-6"></div>
+
+            <section id="transcript-section">
+                <h2 class="text-xl font-bold mb-1 text-center">[DECRYPTION: ARCHIVO_CEM_DEAA_GAMMA_7.LOG]</h2>
+                <p class="text-xs text-center mb-1"><strong class="text-cyan-500">[CONFIDENCIAL – ARCHIVO INTERNO CLASIFICADO]</strong></p>
+                <p class="text-xs text-center mb-1">CONFERENCIA DEL EPISCOPADO MEXICANO</p>
+                <p class="text-xs text-center mb-4">Departamento de Exorcismos y Asuntos Anómalos (DEAA)</p>
+                
+                <div class="border border-green-500 p-4 space-y-3 bg-black bg-opacity-30">
+                    <p><strong class="text-cyan-400">REGISTRO DE INTERROGATORIO – SECCIÓN GAMMA</strong></p>
+                    <p><strong class="text-cyan-400">IDENTIFICACIÓN DEL SUJETO:</strong> █████████████ (Amenaza Sobrenatural Activa – Nivel Escarlata)</p>
+                    <p><strong class="text-cyan-400">FECHA DE REGISTRO:</strong> 5 de Siván, 5785</p>
+                    <p><strong class="text-cyan-400">HORA DE INICIO:</strong> 00:30 hrs.</p>
+                    <p><strong class="text-cyan-400">UBICACIÓN:</strong> Sala de Contención Segura VII, Instalación Subterránea "Arcángel Miguel".</p>
+                    <br>
+                    <p class="text-xs italic text-gray-500">(Inicio de la grabación de audio. Ambiente metálico y frío.)</p>
+                    <p><strong class="text-yellow-300">LA VOZ DEL INTERROGADOR (áspera, cargada de autoridad y hastío):</strong> Entonces, abominación… ilumíname. ¿Qué carajo está planeando tu gente? ¿Por qué esta lluvia de mierda no cesa? ¡Habla de una vez!</p>
+                    <p class="text-red-500 text-sm italic">[Un sonido sordo y húmedo interrumpe el silencio. El impacto brutal de un puño contra carne resistente.]</p>
+                    <p><strong class="text-gray-400">LA VOZ DEL PRISIONERO (gutural, con un matiz de oscura diversión):</strong> Ugh… Ya te lo dije, hombre de la tela… no sé un carajo. Y, por favor, ¿podrías dejar de aporrearme con tus delicados nudillos? En realidad… solo me haces cosquillas. Je, je.</p>
+                    <p><strong class="text-yellow-300">LA VOZ DEL INTERROGADOR:</strong> ¿Cosquillas, eh? Veremos si esto te provoca alguna gracia. ¿Cuál era la misión de tus amiguitos? Para esta hora, ya deben estar ardiendo y chillando en las llamas del infierno que tanto predicamos. Dímelo.</p>
+                    <p><strong class="text-gray-400">LA VOZ DEL PRISIONERO (una risa seca, como piedras raspándose):</strong> ¡JA! ¿Ellos? Simples peones, estorbos glorificados. Si no fuera por su monumental incompetencia, no estaría aquí, disfrutando de tu… exquisita hospitalidad. ¡Sarta de pendejos!</p>
+                    <p class="text-red-500 text-sm italic">[Otro golpe, este más crujiente, seguido de un gruñido ahogado del prisionero, esta vez con un atisbo de dolor.]</p>
+                    <p><strong class="text-gray-400">LA VOZ DEL PRISIONERO:</strong> Okay… eso sí ardió un poco, ¿sabes? Pero puedes seguir golpeándome una y otra vez… Ya te dije todo lo que sé. No hay más en el puto menú.</p>
+                    <p class="text-red-500 text-sm italic">[Un sonido agudo y restallante. Una bofetada que hace eco en la sala.]</p>
+                    <p><strong class="text-yellow-300">LA VOZ DEL INTERROGADOR (siseando con impaciencia):</strong> *Tú* me dirás todo lo que *yo* necesito saber. Sabemos que la Camarilla ha enviado varias tropas de vampiros jóvenes, neófitos, a diversos puntos de esta ciudad maldita. Los ancianos de tu clan, o lo que quede de ellos, creen que este diluvio es obra de un ser muy poderoso. El principio del fin, como balbucean los locos en los mercados inundados. Mi tropa, la que interceptó a tus… colegas, se dirigía a Tecámac. Hay una iglesia olvidada allí, y dentro, una reliquia que, según nuestras fuentes, posiblemente sea la clave para evitar este jodido apocalipsis.</p>
+                    <p><strong class="text-gray-400">LA VOZ DEL PRISIONERO (suelta un suspiro que suena casi teatral, resignado):</strong> Sí, sí… Tecámac, la reliquia, el fin del mundo como lo conocemos… la misma cantaleta. Hay varios puntos de interés para la Camarilla, es cierto. Pero si te digo algo, acá entre nos, y que conste en tu mugrosa acta… yo siempre creí que todo este puto desmadre venía del Tlalocatépetl. Pero claro, nadie me quiso hacer caso. Los "estrategas" siempre saben más, ¿no? En fin, eso es todo lo que tengo para ti. Es todo el botín.</p>
+                    <p><strong class="text-yellow-300">LA VOZ DEL INTERROGADOR (con una calma gélida que eriza la piel):</strong> No aportas nada nuevo. Es exactamente lo mismo que nos dijeron tus compañeros antes de… expirar. Eres una pérdida de tiempo y recursos.</p>
+                    <p class="text-red-500 text-sm italic">[Se escuchan pasos firmes que se acercan. Luego, el chirrido metálico de un mecanismo pesado.]</p>
+                    <p><strong class="text-yellow-300">LA VOZ DEL INTERROGADOR:</strong> Este ya no nos sirve. Abran el ventanal. Que le dé un poco el sol.</p>
+                    <p><strong class="text-gray-400">LA VOZ DEL PRISIONERO (un grito gutural, una mezcla espeluznante de terror puro y rabia impotente, que se corta abruptamente con un siseo violento y un silencio repentino y absoluto):</strong> ¡NOOOO…! ¡ARRRGH…!</p>
+                    <p class="text-xs italic text-gray-500">(Fin de la grabación.)</p>
+                </div>
+            </section>
+
+            <div class="w-full h-px bg-green-400 my-6"></div>
+
+            <section id="date-reveal-section" class="text-center p-6 border border-green-500 bg-black bg-opacity-30">
+                <h2 class="text-xl font-bold mb-2">[CONVERGENCIA TEMPORAL INMINENTE]</h2>
+                <p class="text-base text-red-300 mb-1">Tiempo restante hasta el evento "Observación Primaria":</p>
+                <div id="puzzle-countdown-timer" class="text-4xl md:text-5xl font-bold text-red-400 p-3 mb-6 countdown-digits">
+                    <span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
+                </div>
+
+                <p class="mb-4">Ingrese el código de acceso temporal para decodificar datos de misión:</p>
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-3">
+                    <input type="text" id="access-code-input" class="input-field p-2 w-full sm:w-auto flex-grow" placeholder="Ingresar código de acceso">
+                    <button id="verify-code-btn" class="action-button px-6 py-2 w-full sm:w-auto">VERIFICAR</button>
+                </div>
+                <p id="error-message" class="text-red-500 mt-2 h-5"></p>
+
+                <div id="mission-details-container" class="mt-6 p-4 border border-yellow-300 bg-opacity-50 bg-yellow-900">
+                    <h3 class="text-2xl font-bold text-yellow-300 mb-2">[PROTOCOLO DE MISIÓN ACTIVADO]</h3>
+                    <p class="text-lg text-yellow-200">Nombre de la Operación:</p>
+                    <p id="mission-name" class="text-3xl font-bold text-yellow-300 py-2">Cielos Quebrados, Heridas Abiertas</p>
+                    <p class="text-lg text-yellow-200 mt-3">Fecha de Inicio de Misión:</p>
+                    <p id="mission-start-date" class="text-3xl font-bold text-yellow-300 py-2">28 de Junio de 2025</p>
+                </div>
+            </section>
+             <div class="w-full h-px bg-green-400 my-6"></div>
+            <footer class="text-center mt-8">
+                <p class="text-xs">[FIN DE TRANSMISIÓN // PROTOCOLO DE SILENCIO ACTIVADO]</p>
+            </footer>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const accessCodeInput = document.getElementById('access-code-input');
+            const verifyCodeBtn = document.getElementById('verify-code-btn');
+            const missionDetailsContainer = document.getElementById('mission-details-container');
+            const errorMessage = document.getElementById('error-message');
+
+            const hoursEl = document.getElementById('hours');
+            const minutesEl = document.getElementById('minutes');
+            const secondsEl = document.getElementById('seconds');
+
+            const correctAccessCode = "2 de Tamuz 5785"; 
+            // Target date: June 28, 2025, 00:00:00
+            // JavaScript months are 0-indexed, so June is 5.
+            const targetDateTimestamp = new Date(2025, 5, 28, 0, 0, 0).getTime(); 
+
+            let puzzleCountdownInterval;
+
+            function normalizeString(str) {
+                // Normalize to catch variations like "2 de Tamuz de 5785" or "2 de tamuz 5785"
+                return str.toLowerCase()
+                          .replace(/\s+de\s+/g, ' ') // "de" between month and year
+                          .replace(/\s+/g, ' ') // Multiple spaces
+                          .trim();
+            }
+
+            verifyCodeBtn.addEventListener('click', () => {
+                const userInput = normalizeString(accessCodeInput.value);
+                // Normalize the correct answer as well for robust comparison
+                const normalizedCorrectCode = normalizeString(correctAccessCode);
+                
+                errorMessage.textContent = ''; 
+
+                if (userInput === normalizedCorrectCode) {
+                    missionDetailsContainer.style.display = 'block';
+                    accessCodeInput.disabled = true;
+                    verifyCodeBtn.disabled = true;
+                    accessCodeInput.classList.add('opacity-50');
+                    verifyCodeBtn.classList.add('opacity-50');
+                    errorMessage.textContent = 'ACCESO CONCEDIDO. DATOS DE MISIÓN DESBLOQUEADOS.';
+                    errorMessage.classList.remove('text-red-500');
+                    errorMessage.classList.add('text-green-400');
+                } else {
+                    errorMessage.textContent = 'CÓDIGO INCORRECTO. ACCESO DENEGADO.';
+                    errorMessage.classList.remove('text-green-400');
+                    errorMessage.classList.add('text-red-500');
+                    missionDetailsContainer.style.display = 'none';
+                }
+            });
+
+            function updatePuzzleCountdown() {
+                const now = new Date().getTime();
+                const distance = targetDateTimestamp - now;
+
+                if (distance < 0) {
+                    clearInterval(puzzleCountdownInterval);
+                    hoursEl.textContent = '00';
+                    minutesEl.textContent = '00';
+                    secondsEl.textContent = '00';
+                    const countdownTimerEl = document.getElementById('puzzle-countdown-timer');
+                    if (countdownTimerEl) {
+                         countdownTimerEl.innerHTML = "<p class='text-2xl text-red-500'>TIEMPO EXPIRADO. EVENTO EN CURSO.</p>";
+                    }
+                    return;
+                }
+
+                const totalSecondsRemaining = Math.floor(distance / 1000);
+                const hours = Math.floor(totalSecondsRemaining / 3600);
+                const minutes = Math.floor((totalSecondsRemaining % 3600) / 60);
+                const seconds = totalSecondsRemaining % 60;
+
+
+                hoursEl.textContent = String(hours).padStart(2, '0');
+                minutesEl.textContent = String(minutes).padStart(2, '0');
+                secondsEl.textContent = String(seconds).padStart(2, '0');
+            }
+
+            // Start puzzle countdown on load
+            updatePuzzleCountdown();
+            puzzleCountdownInterval = setInterval(updatePuzzleCountdown, 1000); 
+
+        });
+    </script>
+</body>
+</html>
