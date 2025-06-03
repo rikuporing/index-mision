@@ -15,25 +15,49 @@
             color: #00ff41;
             text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
         }
-        .content-scanlines::before {
+        .terminal-container-bg { /* Renamed to avoid conflict, applied to body */
+            position: fixed; /* Fixed position for background effects */
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden; /* Contains the pseudo-element effects */
+            z-index: -1; /* Behind all content */
+        }
+        .terminal-container-bg::before { /* Scanlines */
             content: "";
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: -1; 
-            background-size: 100% 4px, 6px 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
             pointer-events: none;
             animation: scan 7.5s linear infinite;
+        }
+        .terminal-container-bg::after { /* Flicker sutil */
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(18,16,16,0.05);
+            opacity: 0;
+            animation: flicker 0.18s infinite steps(1, end);
+            pointer-events: none;
         }
         @keyframes scan {
             0% { background-position: 0 0; }
             100% { background-position: 0 100vh; }
         }
+        @keyframes flicker {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.2; }
+        }
         .terminal-glow {
             box-shadow: 0 0 15px #00ff41;
+            position: relative; 
+            z-index: 2; /* Content above background effects */
         }
         .input-field {
             background-color: #051805;
@@ -57,13 +81,32 @@
         }
         #mission-details-container {
             display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        #mission-details-container.visible {
+            display: block;
+            opacity: 1;
         }
         .countdown-digits {
             letter-spacing: 0.05em;
         }
+        .glitch-text {
+            animation: glitch-animation 0.25s infinite alternate;
+            color: #ff3333; 
+            text-shadow: 1px 1px #00ffff, -1px -1px #ff00ff;
+        }
+        @keyframes glitch-animation {
+            0% { transform: translate(1px, -1px); }
+            25% { transform: translate(-1px, 1px); }
+            50% { transform: translate(1px, 1px); }
+            75% { transform: translate(-1px, -1px); }
+            100% { transform: translate(0px, 0px); }
+        }
     </style>
 </head>
-<body class="p-4 md:p-8 relative content-scanlines">
+<body class="p-4 md:p-8">
+    <div class="terminal-container-bg"></div> {/* Div for background effects only */}
 
     <div class="border-2 border-green-400 p-4 md:p-6 terminal-glow max-w-4xl mx-auto">
         <header class="text-center mb-6">
@@ -74,14 +117,16 @@
 
         <main id="main-content" class="space-y-8">
             
-            <section id="prelude-text">
+            <section id="prelude-text-container">
                 <h2 class="text-xl font-bold mb-3 text-center">[INICIO DE TRANSMISIÓN // ALERTA GLOBAL]</h2>
-                <p class="mb-4">El día en que el cielo se rompió, la lluvia comenzó y simplemente… no paró.</p>
-                <p class="mb-4">Al principio, la gente culpó a la temporada de huracanes, inusualmente violenta. Otros, con voz temblorosa, susurraban que era el cambio climático desatado, la antesala del fin del mundo. Nosotros, la gente de la noche, no teníamos respuestas certeras, solo un presentimiento helado que recorría la sangre estancada en nuestras venas.</p>
-                <p class="mb-4">Semanas. Semanas de un aguacero implacable, un llanto constante del cielo.</p>
-                <p class="mb-4">Fue entonces cuando los más viejos, aquellos que aún recuerdan los ecos de otros eones, comenzaron a murmurar el nombre prohibido, la oscura profecía:</p>
-                <p class="text-center text-2xl my-6 animate-pulse">"—Son las Lágrimas de Kain…"</p>
-                <p class="mb-4">Esto no era una simple tormenta. Era un diluvio. Un castigo divino o infernal, ¿quién podría decirlo?</p>
+                <div id="prelude-text" class="space-y-4">
+                    <p class="mb-4">El día en que el cielo se rompió, la lluvia comenzó y simplemente… no paró.</p>
+                    <p class="mb-4">Al principio, la gente culpó a la temporada de huracanes, inusualmente violenta. Otros, con voz temblorosa, susurraban que era el cambio climático desatado, la antesala del fin del mundo. Nosotros, la gente de la noche, no teníamos respuestas certeras, solo un presentimiento helado que recorría la sangre estancada en nuestras venas.</p>
+                    <p class="mb-4">Semanas. Semanas de un aguacero implacable, un llanto constante del cielo.</p>
+                    <p class="mb-4">Fue entonces cuando los más viejos, aquellos que aún recuerdan los ecos de otros eones, comenzaron a murmurar el nombre prohibido, la oscura profecía:</p>
+                    <p class="text-center text-2xl my-6 animate-pulse block">"—Son las Lágrimas de Kain…"</p>
+                    <p class="mb-4">Esto no era una simple tormenta. Era un diluvio. Un castigo divino o infernal, ¿quién podría decirlo?</p>
+                </div>
             </section>
 
             <div class="w-full h-px bg-green-400 my-6"></div>
@@ -132,10 +177,12 @@
                     <input type="text" id="access-code-input" class="input-field p-2 w-full sm:w-auto flex-grow" placeholder="Ingresar código de acceso">
                     <button id="verify-code-btn" class="action-button px-6 py-2 w-full sm:w-auto">VERIFICAR</button>
                 </div>
-                <p id="error-message" class="text-red-500 mt-2 h-5"></p>
+                <div id="error-message-container" class="h-5 mt-2">
+                    <p id="error-message" class="text-red-500" role="alert" aria-live="assertive"></p>
+                </div>
 
-                <div id="mission-details-container" class="mt-6 p-4 border border-yellow-300 bg-opacity-50 bg-yellow-900">
-                    <h3 class="text-2xl font-bold text-yellow-300 mb-2">[PROTOCOLO DE MISIÓN ACTIVADO]</h3>
+                <div id="mission-details-container">
+                    <h3 class="text-2xl font-bold text-yellow-300 mt-6 mb-2">[PROTOCOLO DE MISIÓN ACTIVADO]</h3>
                     <p class="text-lg text-yellow-200">Nombre de la Operación:</p>
                     <p id="mission-name" class="text-3xl font-bold text-yellow-300 py-2">Cielos Quebrados, Heridas Abiertas</p>
                     <p class="text-lg text-yellow-200 mt-3">Fecha de Inicio de Misión:</p>
@@ -149,54 +196,75 @@
 
         </main>
     </div>
+    
+    <audio id="sound-click" src="https://cdn.jsdelivr.net/gh/ManzDev/cursos-assets/js/js-sound-click.mp3" preload="auto"></audio>
+    <audio id="sound-success" src="https://cdn.jsdelivr.net/gh/ManzDev/cursos-assets/js/js-sound-success.mp3" preload="auto"></audio>
+    <audio id="sound-error" src="https://cdn.jsdelivr.net/gh/ManzDev/cursos-assets/js/js-sound-error.mp3" preload="auto"></audio>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const accessCodeInput = document.getElementById('access-code-input');
             const verifyCodeBtn = document.getElementById('verify-code-btn');
             const missionDetailsContainer = document.getElementById('mission-details-container');
-            const errorMessage = document.getElementById('error-message');
-
+            const errorMessageEl = document.getElementById('error-message');
+            
             const hoursEl = document.getElementById('hours');
             const minutesEl = document.getElementById('minutes');
             const secondsEl = document.getElementById('seconds');
 
+            const soundClick = document.getElementById('sound-click');
+            const soundSuccess = document.getElementById('sound-success');
+            const soundError = document.getElementById('sound-error');
+
             const correctAccessCode = "2 de Tamuz 5785"; 
-            // Target date: June 28, 2025, 00:00:00
-            // JavaScript months are 0-indexed, so June is 5.
             const targetDateTimestamp = new Date(2025, 5, 28, 0, 0, 0).getTime(); 
 
             let puzzleCountdownInterval;
+            let glitchTimeout;
 
+            function playSound(soundElement) {
+                if (soundElement) {
+                    soundElement.currentTime = 0;
+                    soundElement.play().catch(e => console.warn("Error al reproducir sonido:", e.message));
+                }
+            }
+            
             function normalizeString(str) {
-                // Normalize to catch variations like "2 de Tamuz de 5785" or "2 de tamuz 5785"
                 return str.toLowerCase()
-                          .replace(/\s+de\s+/g, ' ') // "de" between month and year
-                          .replace(/\s+/g, ' ') // Multiple spaces
+                          .replace(/\s+de\s+/g, ' ') 
+                          .replace(/\s+/g, ' ') 
                           .trim();
             }
 
             verifyCodeBtn.addEventListener('click', () => {
+                playSound(soundClick);
                 const userInput = normalizeString(accessCodeInput.value);
-                // Normalize the correct answer as well for robust comparison
                 const normalizedCorrectCode = normalizeString(correctAccessCode);
                 
-                errorMessage.textContent = ''; 
+                errorMessageEl.textContent = ''; 
+                errorMessageEl.classList.remove('glitch-text');
+                clearTimeout(glitchTimeout);
 
                 if (userInput === normalizedCorrectCode) {
-                    missionDetailsContainer.style.display = 'block';
+                    missionDetailsContainer.classList.add('visible');
                     accessCodeInput.disabled = true;
                     verifyCodeBtn.disabled = true;
                     accessCodeInput.classList.add('opacity-50');
                     verifyCodeBtn.classList.add('opacity-50');
-                    errorMessage.textContent = 'ACCESO CONCEDIDO. DATOS DE MISIÓN DESBLOQUEADOS.';
-                    errorMessage.classList.remove('text-red-500');
-                    errorMessage.classList.add('text-green-400');
+                    errorMessageEl.textContent = 'ACCESO CONCEDIDO. DATOS DE MISIÓN DESBLOQUEADOS.';
+                    errorMessageEl.classList.remove('text-red-500');
+                    errorMessageEl.classList.add('text-green-400');
+                    playSound(soundSuccess);
                 } else {
-                    errorMessage.textContent = 'CÓDIGO INCORRECTO. ACCESO DENEGADO.';
-                    errorMessage.classList.remove('text-green-400');
-                    errorMessage.classList.add('text-red-500');
-                    missionDetailsContainer.style.display = 'none';
+                    errorMessageEl.textContent = 'CÓDIGO INCORRECTO. ACCESO DENEGADO.';
+                    errorMessageEl.classList.remove('text-green-400');
+                    errorMessageEl.classList.add('text-red-500', 'glitch-text');
+                    missionDetailsContainer.classList.remove('visible');
+                    playSound(soundError);
+                    glitchTimeout = setTimeout(() => {
+                        errorMessageEl.classList.remove('glitch-text');
+                    }, 500); 
                 }
             });
 
@@ -221,13 +289,11 @@
                 const minutes = Math.floor((totalSecondsRemaining % 3600) / 60);
                 const seconds = totalSecondsRemaining % 60;
 
-
                 hoursEl.textContent = String(hours).padStart(2, '0');
                 minutesEl.textContent = String(minutes).padStart(2, '0');
                 secondsEl.textContent = String(seconds).padStart(2, '0');
             }
-
-            // Start puzzle countdown on load
+            
             updatePuzzleCountdown();
             puzzleCountdownInterval = setInterval(updatePuzzleCountdown, 1000); 
 
