@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[CLASIFICADO] Dossier: Diluvio Escarlata</title>
+    <title>[CONSOLIDADO] Dossier y Terminal V</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Terminal Green (Consistent across both sections) -->
+    <!-- Application Structure Plan: Dossier 1 shown initially. Button in Dossier 1 switches to Terminal V. Terminal V now has a button to return to Dossier 1.  -->
+    <!-- Visualization & Content Choices: Dossier: date puzzle. Terminal V: numeric sequence to glitched binary. JS handles visibility toggle for both directions. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Share Tech Mono', monospace;
@@ -15,14 +19,14 @@
             color: #00ff41;
             text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
         }
-        .terminal-container-bg { /* Renamed to avoid conflict, applied to body */
-            position: fixed; /* Fixed position for background effects */
+        .terminal-container-bg { 
+            position: fixed; 
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            overflow: hidden; /* Contains the pseudo-element effects */
-            z-index: -1; /* Behind all content */
+            overflow: hidden; 
+            z-index: -1; 
         }
         .terminal-container-bg::before { /* Scanlines */
             content: "";
@@ -54,12 +58,24 @@
             0%, 100% { opacity: 0.1; }
             50% { opacity: 0.2; }
         }
-        .terminal-glow {
+        .content-wrapper { 
+            border: 2px solid #00ff41;
             box-shadow: 0 0 15px #00ff41;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 700px;
+            background-color: rgba(0, 10, 0, 0.85); 
             position: relative; 
-            z-index: 2; /* Content above background effects */
+            z-index: 10; 
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 2rem; 
         }
-        .input-field {
+        .terminal-v-container {
+            display: none; 
+        }
+
+        .input-field { 
             background-color: #051805;
             border: 1px solid #00ff41;
             color: #00ff41;
@@ -69,17 +85,63 @@
             color: #009927;
             opacity: 0.7;
         }
+        .date-char-input { 
+            background-color: #051805;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            text-shadow: 0 0 3px #00ff41;
+            width: 2.2rem; 
+            height: 2.8rem; 
+            text-align: center;
+            font-size: 1.25rem; 
+            padding: 0.25rem;
+            caret-color: #00ff41;
+            -moz-appearance: textfield;
+        }
+        .date-char-input::-webkit-outer-spin-button,
+        .date-char-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .date-char-input:focus {
+            outline: 1px solid #00ff41;
+            box-shadow: 0 0 8px #00ff41;
+        }
+
         .action-button {
             border: 1px solid #00ff41;
-            box-shadow: 0 0 5px #00ff41;
+            color: #00ff41;
+            background-color: transparent;
+            padding: 0.5rem 1rem;
+            text-shadow: inherit;
             transition: all 0.3s ease;
+            margin-top: 0.75rem; 
         }
-        .action-button:hover {
+        .action-button:hover:not(:disabled) {
             background-color: #00ff41;
             color: #0a0a0a;
             text-shadow: none;
         }
-        #mission-details-container {
+        .action-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .navigation-button { 
+            background-color: #005c1f; 
+            border-color: #00ff41;
+            color: #ccffdd;
+            margin-top: 2rem; 
+            padding: 0.75rem 1.5rem;
+            font-size: 1.1rem;
+            width: 100%; 
+            display: block;
+        }
+        .navigation-button:hover:not(:disabled) {
+            background-color: #00ff41;
+            color: #0a0a0a;
+        }
+        
+        #mission-details-container { 
             display: none;
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
@@ -91,32 +153,117 @@
         .countdown-digits {
             letter-spacing: 0.05em;
         }
-        .glitch-text {
-            animation: glitch-animation 0.25s infinite alternate;
+
+        #binary-output-container { 
+            display: none; 
+            border: 1px dashed #00cc33; 
+            padding: 1rem;
+            margin-top: 1rem;
+            background-color: rgba(0,0,0,0.3); 
+            max-height: 250px; 
+            overflow-y: auto; 
+            position: relative; 
+        }
+        #binary-output-container:not(.glitch-active-area) #binary-code-content {
+            color: #00ff41; 
+            opacity: 1;
+        }
+         #binary-output-container:not(.glitch-active-area) #binary-output-title {
+            color: #ffff00; 
+            text-shadow: 0 0 3px #ffff00;
+        }
+
+        #binary-output-container.glitch-active-area {
+            border-color: #FF3333;
+            background-color: rgba(0,0,0,0.5);
+        }
+        #binary-output-container.glitch-active-area #binary-code-content {
+            opacity: 0.6; 
+            color: #009920; 
+            position: relative;
+            z-index: 0;
+        }
+         #binary-output-container.glitch-active-area #binary-output-title {
+            animation: glitch-color-text-anim 0.5s infinite linear alternate;
+            position: relative;
+            z-index: 5; 
+        }
+
+        .glitch-active-area::before,
+        .glitch-active-area::after {
+            content: 'ERR_DATA_CORRUPTION // SYS_FAULT // !@#GX%Z\AUNSTABLE_SIGNAL // PLZ_RETRY // SECTOR_FAIL\A0xDEADBEEF // KERNEL_PANIC // BAD_CHECKSUM\A##### // TRANSMISSION_INTERRUPTED // FRAGMENTED_DATA';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            font-size: 1em;
+            opacity: 0; 
+            pointer-events: none;
+            z-index: 10;
+            white-space: pre-wrap;
+            overflow: hidden;
+            line-height: 1.2;
+            padding: 0.5rem;
+            box-sizing: border-box;
+            font-family: 'Share Tech Mono', monospace; 
+        }
+        .glitch-active-area::before {
+            color: #FF3333; 
+            text-shadow: 1px 0px 0px #00FFFF, -1px 0px 0px #FF00FF;
+            animation: 
+                glitch-text-anim-complex 0.1s infinite steps(2, jump-none) alternate,
+                glitch-opacity-fadein 0.5s forwards;
+        }
+        .glitch-active-area::after {
+            content: 'ACCESS_DENIED_OVERRIDE // SECURITY_BREACH_DETECTED\AATTEMPTING_RECOVERY // ...FAIL\AREBOOT_SEQUENCE_INITIATED_ERR\A%^&*#@! // CORRUPT_PACKET // BUFFER_OVERFLOW';
+            color: #00FF00; 
+             text-shadow: 1px 0px 0px #FF00FF, -1px 0px 0px #00FFFF;
+            animation: 
+                glitch-text-anim-complex 0.15s infinite steps(3, jump-none) alternate-reverse,
+                glitch-opacity-fadein 0.7s forwards 0.2s; 
+            z-index: 11; 
+        }
+        @keyframes glitch-opacity-fadein {
+            from { opacity: 0; }
+            to { opacity: 0.15; } 
+        }
+        @keyframes glitch-text-anim-complex {
+            0% { clip-path: inset(15% 0% 70% 0%); transform: translate(-3px, 2px); }10% { clip-path: inset(80% 0% 5% 0%); transform: translate(4px, -3px); }20% { clip-path: inset(5% 0% 85% 0%); transform: translate(-2px, -2px); }30% { clip-path: inset(60% 0% 20% 0%); transform: translate(3px, 4px); }40% { clip-path: inset(25% 0% 50% 0%); transform: translate(-4px, 1px); }50% { clip-path: inset(75% 0% 10% 0%); transform: translate(2px, -4px); }60% { clip-path: inset(10% 0% 65% 0%); transform: translate(-1px, 3px); }70% { clip-path: inset(50% 0% 30% 0%); transform: translate(4px, -1px); }80% { clip-path: inset(90% 0% 2% 0%); transform: translate(-3px, -3px); }90% { clip-path: inset(20% 0% 75% 0%); transform: translate(1px, 2px); }100% { clip-path: inset(45% 0% 45% 0%); transform: translate(0px, 0px); }
+        }
+         @keyframes glitch-color-text-anim {
+            0% { color: #ffff00; text-shadow: 0 0 3px #ffff00;}25% { color: #ff9900; text-shadow: 0 0 3px #ff9900;}50% { color: #ff3300; text-shadow: 0 0 5px #ff3300;}75% { color: #cc0000; text-shadow: 0 0 5px #cc0000;}100% { color: #ff00ff; text-shadow: 0 0 3px #ff00ff;}
+        }
+        .input-error-glitch { 
+            animation: input-glitch-animation 0.25s infinite alternate; 
             color: #ff3333; 
             text-shadow: 1px 1px #00ffff, -1px -1px #ff00ff;
         }
-        @keyframes glitch-animation {
-            0% { transform: translate(1px, -1px); }
-            25% { transform: translate(-1px, 1px); }
-            50% { transform: translate(1px, 1px); }
-            75% { transform: translate(-1px, -1px); }
-            100% { transform: translate(0px, 0px); }
+        @keyframes input-glitch-animation { 
+            0% { transform: translate(1px, -1px); }25% { transform: translate(-1px, 1px); }50% { transform: translate(1px, 1px); }75% { transform: translate(-1px, -1px); }100% { transform: translate(0px, 0px); }
+        }
+        .date-input-group { 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem; 
+        }
+        .hidden-section { 
+            display: none !important;
         }
     </style>
 </head>
 <body class="p-4 md:p-8">
-    <div class="terminal-container-bg"></div> {/* Div for background effects only */}
+    <div class="terminal-container-bg"></div> 
 
-    <div class="border-2 border-green-400 p-4 md:p-6 terminal-glow max-w-4xl mx-auto">
+    <div id="dossier-wrapper" class="content-wrapper dossier-container"> 
         <header class="text-center mb-6">
             <h1 class="text-2xl md:text-4xl font-bold">[ DOSSIER: DILUVIO ESCARLATA ]</h1>
             <p class="text-sm">ACCESO CONCEDIDO: USUARIO_██████</p>
             <div class="w-full h-px bg-green-400 my-3"></div>
         </header>
 
-        <main id="main-content" class="space-y-8">
-            
+        <main id="dossier-main-content" class="space-y-8">
             <section id="prelude-text-container">
                 <h2 class="text-xl font-bold mb-3 text-center">[INICIO DE TRANSMISIÓN // ALERTA GLOBAL]</h2>
                 <div id="prelude-text" class="space-y-4">
@@ -165,63 +312,126 @@
 
             <div class="w-full h-px bg-green-400 my-6"></div>
 
-            <section id="date-reveal-section" class="text-center p-6 border border-green-500 bg-black bg-opacity-30">
+            <section id="dossier-date-reveal-section" class="text-center p-6 border border-green-500 bg-black bg-opacity-30">
                 <h2 class="text-xl font-bold mb-2">[CONVERGENCIA TEMPORAL INMINENTE]</h2>
                 <p class="text-base text-red-300 mb-1">Tiempo restante hasta el evento "Observación Primaria":</p>
                 <div id="puzzle-countdown-timer" class="text-4xl md:text-5xl font-bold text-red-400 p-3 mb-6 countdown-digits">
-                    <span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
+                    <span id="dossier-hours">00</span>:<span id="dossier-minutes">00</span>:<span id="dossier-seconds">00</span>
                 </div>
-
                 <p class="mb-4">Ingrese el código de acceso temporal para decodificar datos de misión:</p>
                 <div class="flex flex-col sm:flex-row justify-center items-center gap-3">
-                    <input type="text" id="access-code-input" class="input-field p-2 w-full sm:w-auto flex-grow" placeholder="Ingresar código de acceso">
-                    <button id="verify-code-btn" class="action-button px-6 py-2 w-full sm:w-auto">VERIFICAR</button>
+                    <input type="text" id="dossier-access-code-input" class="input-field p-2 w-full sm:w-auto flex-grow" placeholder="Ingresar código de acceso">
+                    <button id="dossier-verify-code-btn" class="action-button px-6 py-2 w-full sm:w-auto">VERIFICAR</button>
                 </div>
-                <div id="error-message-container" class="h-5 mt-2">
-                    <p id="error-message" class="text-red-500" role="alert" aria-live="assertive"></p>
+                <div id="dossier-error-message-container" class="h-5 mt-2">
+                    <p id="dossier-error-message" class="text-red-500" role="alert" aria-live="assertive"></p>
                 </div>
-
-                <div id="mission-details-container">
+                <div id="mission-details-container"> 
                     <h3 class="text-2xl font-bold text-yellow-300 mt-6 mb-2">[PROTOCOLO DE MISIÓN ACTIVADO]</h3>
                     <p class="text-lg text-yellow-200">Nombre de la Operación:</p>
                     <p id="mission-name" class="text-3xl font-bold text-yellow-300 py-2">Cielos Quebrados, Heridas Abiertas</p>
                     <p class="text-lg text-yellow-200 mt-3">Fecha de Inicio de Misión:</p>
                     <p id="mission-start-date" class="text-3xl font-bold text-yellow-300 py-2">28 de Junio de 2025</p>
                 </div>
+                 <button id="proceed-to-terminal-v-btn" class="action-button navigation-button">
+                    [ACCEDER A INTERFAZ DE DATOS V &gt;&gt;]
+                </button>
             </section>
-             <div class="w-full h-px bg-green-400 my-6"></div>
+            <div class="w-full h-px bg-green-400 my-6"></div>
             <footer class="text-center mt-8">
-                <p class="text-xs">[FIN DE TRANSMISIÓN // PROTOCOLO DE SILENCIO ACTIVADO]</p>
+                <p class="text-xs">[FIN DE TRANSMISIÓN DOSSIER // PROTOCOLO DE SILENCIO ACTIVADO]</p>
             </footer>
-
         </main>
+    </div>
+
+    {/* Separador visual entre los dos acertijos, se mantiene por si se quiere mostrar siempre */}
+    {/* <div class="w-full h-px bg-red-600 my-12 border-2 border-dashed border-red-700"></div>  */}
+
+    <div id="terminal-v-wrapper" class="content-wrapper terminal-v-container"> {/* Puzzle 2 Wrapper, hidden initially */}
+        <header class="text-center mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold">[TERMINAL DE DATOS V // PROTOCOLO DE ACCESO RESTRINGIDO]</h1>
+            <div class="w-full h-px bg-green-400 my-3"></div>
+        </header>
+
+        <main id="terminal-v-main-content" class="space-y-6">
+            <section id="terminal-v-date-input-section" class="text-center">
+                <p class="mb-3 text-yellow-300">&gt; INGRESE SECUENCIA NUMÉRICA DE REGISTRO INICIO</p>
+                <div id="terminal-v-date-casillas-container" class="flex flex-wrap items-center justify-center gap-x-2 gap-y-2 mb-3"> 
+                    <div class="date-input-group" id="numeric-date-inputs">
+                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 1 de la fecha">
+                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 2 de la fecha">
+                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 3 de la fecha">
+                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 4 de la fecha">
+                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 5 de la fecha">
+                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 6 de la fecha">
+                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 7 de la fecha">
+                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 8 de la fecha">
+                    </div>
+                </div>
+                <button id="terminal-v-verify-date-btn" class="action-button">DECODIFICAR TRANSMISIÓN</button>
+                <div id="terminal-v-message-feedback-container" class="h-6 mt-2">
+                    <p id="terminal-v-message-feedback" class="text-red-500" role="alert" aria-live="assertive"></p>
+                </div>
+            </section>
+
+            <section id="binary-output-container"> 
+                <h2 id="binary-output-title" class="text-xl font-bold text-yellow-300 mb-2">[INICIO DE TRANSMISIÓN // REGISTRO 02 T]</h2>
+                <pre id="binary-code-content" class="text-sm whitespace-pre-wrap leading-relaxed"></pre> 
+            </section>
+             <button id="return-to-dossier-btn" class="action-button navigation-button mt-8">
+                [&lt;&lt; VOLVER AL DOSSIER PRINCIPAL]
+            </button>
+        </main>
+
+        <footer class="text-center mt-8 pt-4 border-t border-green-600">
+            <p class="text-xs">[SESIÓN TERMINAL V ACTIVA // VIGILANCIA CONSTANTE]</p>
+        </footer>
     </div>
     
     <audio id="sound-click" src="https://cdn.jsdelivr.net/gh/ManzDev/cursos-assets/js/js-sound-click.mp3" preload="auto"></audio>
     <audio id="sound-success" src="https://cdn.jsdelivr.net/gh/ManzDev/cursos-assets/js/js-sound-success.mp3" preload="auto"></audio>
     <audio id="sound-error" src="https://cdn.jsdelivr.net/gh/ManzDev/cursos-assets/js/js-sound-error.mp3" preload="auto"></audio>
 
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const accessCodeInput = document.getElementById('access-code-input');
-            const verifyCodeBtn = document.getElementById('verify-code-btn');
-            const missionDetailsContainer = document.getElementById('mission-details-container');
-            const errorMessageEl = document.getElementById('error-message');
-            
-            const hoursEl = document.getElementById('hours');
-            const minutesEl = document.getElementById('minutes');
-            const secondsEl = document.getElementById('seconds');
+            // --- Contenedores Principales ---
+            const dossierWrapper = document.getElementById('dossier-wrapper');
+            const terminalVWrapper = document.getElementById('terminal-v-wrapper');
 
+            // --- Variables y Lógica para el Dossier "Diluvio Escarlata" ---
+            const dossierAccessCodeInput = document.getElementById('dossier-access-code-input');
+            const dossierVerifyCodeBtn = document.getElementById('dossier-verify-code-btn');
+            const missionDetailsContainer = document.getElementById('mission-details-container');
+            const dossierErrorMessageEl = document.getElementById('dossier-error-message');
+            const proceedToTerminalVBtn = document.getElementById('proceed-to-terminal-v-btn');
+            
+            const dossierHoursEl = document.getElementById('dossier-hours');
+            const dossierMinutesEl = document.getElementById('dossier-minutes');
+            const dossierSecondsEl = document.getElementById('dossier-seconds');
+
+            const DOSSIER_CORRECT_ACCESS_CODE = "2 de Tamuz 5785"; 
+            const DOSSIER_TARGET_DATE_TIMESTAMP = new Date(2025, 5, 28, 0, 0, 0).getTime(); 
+            let dossierPuzzleCountdownInterval;
+            let dossierGlitchTimeout;
+
+            // --- Variables y Lógica para la "Terminal de Datos V" ---
+            const terminalVVerifyDateBtn = document.getElementById('terminal-v-verify-date-btn');
+            const terminalVMessageFeedbackEl = document.getElementById('terminal-v-message-feedback');
+            const binaryOutputContainerEl = document.getElementById('binary-output-container');
+            const binaryCodeContentEl = document.getElementById('binary-code-content');
+            const binaryOutputTitleEl = document.getElementById('binary-output-title');
+            const terminalVDateInputs = Array.from(document.querySelectorAll('#numeric-date-inputs .date-char-input'));
+            const returnToDossierBtn = document.getElementById('return-to-dossier-btn');
+
+
+            const TERMINAL_V_TARGET_NUMERIC_DATE = "28062025"; 
+            const TERMINAL_V_MESSAGE_TO_ENCODE = "Eligio Ancona 106 Santa María la Ribera V:";
+            let terminalVGlitchTimeout;
+
+            // --- Sonidos (compartidos) ---
             const soundClick = document.getElementById('sound-click');
             const soundSuccess = document.getElementById('sound-success');
             const soundError = document.getElementById('sound-error');
-
-            const correctAccessCode = "2 de Tamuz 5785"; 
-            const targetDateTimestamp = new Date('2025-06-28T17:00:00').getTime(); 
-
-            let puzzleCountdownInterval;
-            let glitchTimeout;
 
             function playSound(soundElement) {
                 if (soundElement) {
@@ -229,76 +439,186 @@
                     soundElement.play().catch(e => console.warn("Error al reproducir sonido:", e.message));
                 }
             }
-            
-            function normalizeString(str) {
-                return str.toLowerCase()
-                          .replace(/\s+de\s+/g, ' ') 
-                          .replace(/\s+/g, ' ') 
-                          .trim();
+
+            // --- Lógica para el Dossier "Diluvio Escarlata" ---
+            function normalizeDossierString(str) {
+                return str.toLowerCase().replace(/\s+de\s+/g, ' ').replace(/\s+/g, ' ').trim();
             }
 
-            verifyCodeBtn.addEventListener('click', () => {
-                playSound(soundClick);
-                const userInput = normalizeString(accessCodeInput.value);
-                const normalizedCorrectCode = normalizeString(correctAccessCode);
-                
-                errorMessageEl.textContent = ''; 
-                errorMessageEl.classList.remove('glitch-text');
-                clearTimeout(glitchTimeout);
+            if(dossierVerifyCodeBtn){
+                dossierVerifyCodeBtn.addEventListener('click', () => {
+                    playSound(soundClick);
+                    const userInput = normalizeDossierString(dossierAccessCodeInput.value);
+                    const normalizedCorrectCode = normalizeDossierString(DOSSIER_CORRECT_ACCESS_CODE);
+                    
+                    dossierErrorMessageEl.textContent = ''; 
+                    dossierErrorMessageEl.classList.remove('input-error-glitch'); 
+                    clearTimeout(dossierGlitchTimeout);
 
-                if (userInput === normalizedCorrectCode) {
-                    missionDetailsContainer.classList.add('visible');
-                    accessCodeInput.disabled = true;
-                    verifyCodeBtn.disabled = true;
-                    accessCodeInput.classList.add('opacity-50');
-                    verifyCodeBtn.classList.add('opacity-50');
-                    errorMessageEl.textContent = 'ACCESO CONCEDIDO. DATOS DE MISIÓN DESBLOQUEADOS.';
-                    errorMessageEl.classList.remove('text-red-500');
-                    errorMessageEl.classList.add('text-green-400');
-                    playSound(soundSuccess);
-                } else {
-                    errorMessageEl.textContent = 'CÓDIGO INCORRECTO. ACCESO DENEGADO.';
-                    errorMessageEl.classList.remove('text-green-400');
-                    errorMessageEl.classList.add('text-red-500', 'glitch-text');
-                    missionDetailsContainer.classList.remove('visible');
-                    playSound(soundError);
-                    glitchTimeout = setTimeout(() => {
-                        errorMessageEl.classList.remove('glitch-text');
-                    }, 500); 
-                }
-            });
+                    if (userInput === normalizedCorrectCode) {
+                        missionDetailsContainer.classList.add('visible');
+                        dossierAccessCodeInput.disabled = true;
+                        dossierVerifyCodeBtn.disabled = true;
+                        dossierAccessCodeInput.classList.add('opacity-50');
+                        dossierVerifyCodeBtn.classList.add('opacity-50');
+                        dossierErrorMessageEl.textContent = 'ACCESO CONCEDIDO. DATOS DE MISIÓN DESBLOQUEADOS.';
+                        dossierErrorMessageEl.classList.remove('text-red-500');
+                        dossierErrorMessageEl.classList.add('text-green-400');
+                        playSound(soundSuccess);
+                        // proceedToTerminalVBtn.classList.add('visible'); // Botón para ir a Terminal V ahora se muestra siempre
+                    } else {
+                        dossierErrorMessageEl.textContent = 'CÓDIGO INCORRECTO. ACCESO DENEGADO.';
+                        dossierErrorMessageEl.classList.remove('text-green-400');
+                        dossierErrorMessageEl.classList.add('text-red-500', 'input-error-glitch');
+                        missionDetailsContainer.classList.remove('visible');
+                        // proceedToTerminalVBtn.classList.remove('visible'); // Se oculta si el código es incorrecto, aunque ya es siempre visible
+                        playSound(soundError);
+                        dossierGlitchTimeout = setTimeout(() => {
+                            dossierErrorMessageEl.classList.remove('input-error-glitch');
+                        }, 500); 
+                    }
+                });
+            }
 
-            function updatePuzzleCountdown() {
+            if(proceedToTerminalVBtn){ // Este botón siempre está visible ahora
+                proceedToTerminalVBtn.addEventListener('click', () => {
+                    playSound(soundClick);
+                    dossierWrapper.classList.add('hidden-section'); 
+                    terminalVWrapper.style.display = 'block'; 
+                    terminalVWrapper.classList.remove('hidden-section'); 
+                    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+                });
+            }
+            
+            if(returnToDossierBtn){
+                 returnToDossierBtn.addEventListener('click', () => {
+                    playSound(soundClick);
+                    terminalVWrapper.style.display = 'none'; 
+                    dossierWrapper.classList.remove('hidden-section'); 
+                    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+                });
+            }
+
+
+            function updateDossierPuzzleCountdown() {
                 const now = new Date().getTime();
-                const distance = targetDateTimestamp - now;
+                const distance = DOSSIER_TARGET_DATE_TIMESTAMP - now;
 
                 if (distance < 0) {
-                    clearInterval(puzzleCountdownInterval);
-                    hoursEl.textContent = '00';
-                    minutesEl.textContent = '00';
-                    secondsEl.textContent = '00';
+                    clearInterval(dossierPuzzleCountdownInterval);
+                    if(dossierHoursEl) dossierHoursEl.textContent = '00';
+                    if(dossierMinutesEl) dossierMinutesEl.textContent = '00';
+                    if(dossierSecondsEl) dossierSecondsEl.textContent = '00';
                     const countdownTimerEl = document.getElementById('puzzle-countdown-timer');
                     if (countdownTimerEl) {
                          countdownTimerEl.innerHTML = "<p class='text-2xl text-red-500'>TIEMPO EXPIRADO. EVENTO EN CURSO.</p>";
                     }
                     return;
                 }
-
                 const totalSecondsRemaining = Math.floor(distance / 1000);
                 const hours = Math.floor(totalSecondsRemaining / 3600);
                 const minutes = Math.floor((totalSecondsRemaining % 3600) / 60);
                 const seconds = totalSecondsRemaining % 60;
 
-                hoursEl.textContent = String(hours).padStart(2, '0');
-                minutesEl.textContent = String(minutes).padStart(2, '0');
-                secondsEl.textContent = String(seconds).padStart(2, '0');
+                if(dossierHoursEl) dossierHoursEl.textContent = String(hours).padStart(2, '0');
+                if(dossierMinutesEl) dossierMinutesEl.textContent = String(minutes).padStart(2, '0');
+                if(dossierSecondsEl) dossierSecondsEl.textContent = String(seconds).padStart(2, '0');
             }
-            
-            updatePuzzleCountdown();
-            puzzleCountdownInterval = setInterval(updatePuzzleCountdown, 1000); 
+            if(dossierHoursEl && dossierMinutesEl && dossierSecondsEl){
+                 updateDossierPuzzleCountdown();
+                 dossierPuzzleCountdownInterval = setInterval(updateDossierPuzzleCountdown, 1000); 
+            }
 
+
+            // --- Lógica para la "Terminal de Datos V" ---
+            if(terminalVDateInputs.length > 0) { 
+                terminalVDateInputs.forEach((input, index) => {
+                    input.addEventListener('input', (e) => {
+                        if (!/^\d?$/.test(e.target.value)) {
+                            e.target.value = '';
+                            return;
+                        }
+                        if (e.target.value.length > 1) {
+                            e.target.value = e.target.value.slice(0, 1);
+                        }
+                        if (e.target.value.length === 1 && index < terminalVDateInputs.length - 1) {
+                            terminalVDateInputs[index + 1].focus();
+                        }
+                    });
+                    input.addEventListener('keydown', (e) => {
+                        if (!((e.keyCode >= 48 && e.keyCode <= 57) || 
+                              (e.keyCode >= 96 && e.keyCode <= 105) || 
+                               e.key === 'Backspace' || e.key === 'Delete' || 
+                               e.key === 'Tab' || e.key.startsWith('Arrow'))) {
+                            e.preventDefault();
+                        }
+                        if (e.key === 'Backspace' && e.target.value.length === 0 && index > 0) {
+                            terminalVDateInputs[index - 1].focus();
+                        }
+                    });
+                });
+            }
+
+
+            function constructNumericDateFromTerminalVInputs(inputsArr) {
+                return inputsArr.map(input => input.value).join('');
+            }
+
+            function stringToBinaryForTerminalV(str) { 
+                let binaryString = '';
+                for (let i = 0; i < str.length; i++) {
+                    const charCode = str.charCodeAt(i);
+                    const binaryChar = charCode.toString(2).padStart(8, '0');
+                    binaryString += binaryChar + ' '; 
+                }
+                return binaryString.trim(); 
+            }
+
+            function disableTerminalVInputs() {
+                terminalVDateInputs.forEach(input => {
+                    input.disabled = true;
+                    input.classList.add('opacity-50');
+                });
+                terminalVVerifyDateBtn.disabled = true;
+                terminalVVerifyDateBtn.classList.add('opacity-50');
+            }
+
+            if(terminalVVerifyDateBtn) { 
+                terminalVVerifyDateBtn.addEventListener('click', () => {
+                    playSound(soundClick);
+                    const userInputDate = constructNumericDateFromTerminalVInputs(terminalVDateInputs);
+
+                    terminalVMessageFeedbackEl.textContent = '';
+                    terminalVMessageFeedbackEl.classList.remove('input-error-glitch', 'text-green-400', 'text-red-500');
+                    binaryOutputContainerEl.classList.remove('glitch-active-area');
+                    binaryOutputTitleEl.textContent = "[INICIO DE TRANSMISIÓN // REGISTRO 02 T]";
+                    clearTimeout(terminalVGlitchTimeout);
+
+                    if (userInputDate === TERMINAL_V_TARGET_NUMERIC_DATE) {
+                        terminalVMessageFeedbackEl.textContent = 'SECUENCIA CORRECTA. INICIANDO DECODIFICACIÓN...';
+                        terminalVMessageFeedbackEl.classList.add('text-green-400');
+                        playSound(soundSuccess);
+                        
+                        const binaryResult = stringToBinaryForTerminalV(TERMINAL_V_MESSAGE_TO_ENCODE); 
+                        binaryCodeContentEl.textContent = binaryResult;
+                        binaryOutputContainerEl.style.display = 'block';
+                        binaryOutputContainerEl.classList.add('glitch-active-area'); 
+                        
+                        disableTerminalVInputs();
+
+                    } else {
+                        terminalVMessageFeedbackEl.textContent = 'ERROR: SECUENCIA INCORRECTA. ACCESO DENEGADO.';
+                        terminalVMessageFeedbackEl.classList.add('text-red-500', 'input-error-glitch'); 
+                        binaryOutputContainerEl.style.display = 'none';
+                        binaryCodeContentEl.textContent = '';
+                        playSound(soundError);
+                        terminalVGlitchTimeout = setTimeout(() => {
+                            terminalVMessageFeedbackEl.classList.remove('input-error-glitch');
+                        }, 500);
+                    }
+                });
+            }
         });
     </script>
 </body>
 </html>
-
