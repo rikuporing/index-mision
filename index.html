@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Terminal Green (Consistent across both sections) -->
-    <!-- Application Structure Plan: Dossier 1 shown initially. Button in Dossier 1 switches to Terminal V. Terminal V now has a button to return to Dossier 1.  -->
+    <!-- Application Structure Plan: Dossier 1 shown initially. Button in Dossier 1 switches to Terminal V. Terminal V now has a button to return to Dossier 1. Visual separator removed. -->
     <!-- Visualization & Content Choices: Dossier: date puzzle. Terminal V: numeric sequence to glitched binary. JS handles visibility toggle for both directions. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
@@ -344,10 +344,7 @@
         </main>
     </div>
 
-    {/* Separador visual entre los dos acertijos, se mantiene por si se quiere mostrar siempre */}
-    {/* <div class="w-full h-px bg-red-600 my-12 border-2 border-dashed border-red-700"></div>  */}
-
-    <div id="terminal-v-wrapper" class="content-wrapper terminal-v-container"> {/* Puzzle 2 Wrapper, hidden initially */}
+    <div id="terminal-v-wrapper" class="content-wrapper terminal-v-container"> 
         <header class="text-center mb-6">
             <h1 class="text-2xl md:text-3xl font-bold">[TERMINAL DE DATOS V // PROTOCOLO DE ACCESO RESTRINGIDO]</h1>
             <div class="w-full h-px bg-green-400 my-3"></div>
@@ -465,13 +462,11 @@
                         dossierErrorMessageEl.classList.remove('text-red-500');
                         dossierErrorMessageEl.classList.add('text-green-400');
                         playSound(soundSuccess);
-                        // proceedToTerminalVBtn.classList.add('visible'); // Botón para ir a Terminal V ahora se muestra siempre
                     } else {
                         dossierErrorMessageEl.textContent = 'CÓDIGO INCORRECTO. ACCESO DENEGADO.';
                         dossierErrorMessageEl.classList.remove('text-green-400');
                         dossierErrorMessageEl.classList.add('text-red-500', 'input-error-glitch');
                         missionDetailsContainer.classList.remove('visible');
-                        // proceedToTerminalVBtn.classList.remove('visible'); // Se oculta si el código es incorrecto, aunque ya es siempre visible
                         playSound(soundError);
                         dossierGlitchTimeout = setTimeout(() => {
                             dossierErrorMessageEl.classList.remove('input-error-glitch');
@@ -480,7 +475,7 @@
                 });
             }
 
-            if(proceedToTerminalVBtn){ // Este botón siempre está visible ahora
+            if(proceedToTerminalVBtn){ 
                 proceedToTerminalVBtn.addEventListener('click', () => {
                     playSound(soundClick);
                     dossierWrapper.classList.add('hidden-section'); 
@@ -524,7 +519,7 @@
                 if(dossierMinutesEl) dossierMinutesEl.textContent = String(minutes).padStart(2, '0');
                 if(dossierSecondsEl) dossierSecondsEl.textContent = String(seconds).padStart(2, '0');
             }
-            if(dossierHoursEl && dossierMinutesEl && dossierSecondsEl){
+            if(dossierHoursEl && dossierMinutesEl && dossierSecondsEl){ // Ensure elements exist
                  updateDossierPuzzleCountdown();
                  dossierPuzzleCountdownInterval = setInterval(updateDossierPuzzleCountdown, 1000); 
             }
@@ -622,3 +617,4 @@
     </script>
 </body>
 </html>
+
