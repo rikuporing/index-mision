@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[CONSOLIDADO] Dossier, Terminal V y Bestiario</title>
+    <title>[CONSOLIDADO] Dossier, Terminal V y Archivos Anómalos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Terminal Green (Consistent across all sections) -->
-    <!-- Application Structure Plan: Start on Dossier 1. Two persistent buttons navigate to Terminal V or Bestiary. Each sub-section has a return button. This creates a main hub with explorable branches. -->
-    <!-- Visualization & Content Choices: Dossier: date puzzle. Terminal V: numeric sequence to glitched binary. Bestiary: grid-to-modal clan browser. JS handles all visibility, validation, and effects. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- 
+        Paleta de colores: Terminal Green (Consistente en todas las secciones)
+        Estructura de la aplicación: Aplicación de una sola página. El Dossier Vástago es el hub principal, con ramas que llevan a la Terminal V, el Bestiario de Clanes y los Archivos de Magos.
+        Visualización y contenido: Se mantiene la estética de terminal. Se ha integrado el contenido de Mago como una sección explorable desde el hub de Vampiro.
+    -->
     <style>
+        /* --- ESTILOS GENERALES Y DE FONDO --- */
         body {
             font-family: 'Share Tech Mono', monospace;
             background-color: #0a0a0a;
@@ -21,26 +23,20 @@
         }
         .terminal-container-bg { 
             position: fixed; 
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0; width: 100vw; height: 100vh;
             overflow: hidden; 
             z-index: -1; 
         }
         .terminal-container-bg::before { /* Scanlines */
             content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
             background-size: 100% 4px;
             pointer-events: none;
             animation: scan 7.5s linear infinite;
         }
-        .terminal-container-bg::after { /* Flicker sutil */
+        .terminal-container-bg::after { /* Flicker */
             content: " ";
             display: block;
             position: absolute;
@@ -50,30 +46,49 @@
             animation: flicker 0.18s infinite steps(1, end);
             pointer-events: none;
         }
-        @keyframes scan {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 100vh; }
-        }
-        @keyframes flicker {
-            0%, 100% { opacity: 0.1; }
-            50% { opacity: 0.2; }
-        }
+        @keyframes scan { 0% { background-position: 0 0; } 100% { background-position: 0 100vh; } }
+        @keyframes flicker { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.2; } }
+        
         .content-wrapper { 
-            border: 2px solid #00ff41;
-            box-shadow: 0 0 15px #00ff41;
-            padding: 1.5rem;
-            width: 100%;
+            border: 2px solid #00ff41; 
+            box-shadow: 0 0 15px #00ff41; 
+            padding: 1.5rem; 
+            width: 100%; 
             max-width: 900px;
             background-color: rgba(0, 10, 0, 0.85); 
             position: relative; 
             z-index: 10; 
             margin: 2rem auto;
         }
-        .hidden-section {
-            display: none !important;
-        }
+        .hidden-section { display: none !important; }
+        .accent-text { color: #ffff00; text-shadow: 0 0 4px #ffff00; } 
+        .section-divider { border-top: 2px dashed #00802B; margin-top: 2rem; margin-bottom: 2rem; opacity: 0.5; }
 
-        /* Input Styles */
+        /* --- ESTILOS DE BOTONES --- */
+        .navigation-button, .action-button, .concept-item, .clan-grid-item {
+            border: 1px solid #00802B;
+            text-align: center; cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            background-color: rgba(0, 20, 0, 0.5);
+            color: #ccffdd; 
+            padding: 1rem 1.5rem;
+        }
+        .navigation-button:hover, .action-button:hover, .concept-item:hover, .clan-grid-item:hover {
+            background-color: #00ff41; color: #0a0a0a; text-shadow: none;
+            transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0, 255, 65, 0.4);
+        }
+        .navigation-button, .action-button { font-size: 1.2rem; display: block; width: 100%; }
+        .action-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* --- ESTILOS DE MODALES --- */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .modal-close-btn { transition: all 0.2s ease-in-out; }
+        .modal-close-btn:hover { color: #ff3333; transform: rotate(90deg); }
+
+        /* --- ESTILOS DE INPUTS Y PUZLES --- */
         .input-field, .date-char-input { 
             background-color: #051805;
             border: 1px solid #00ff41;
@@ -88,59 +103,66 @@
         .date-char-input::-webkit-outer-spin-button,
         .date-char-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .date-char-input:focus { outline: 1px solid #00ff41; box-shadow: 0 0 8px #00ff41; }
-
-        /* Button Styles */
-        .action-button {
-            border: 1px solid #00ff41; color: #00ff41; background-color: transparent;
-            padding: 0.5rem 1rem; text-shadow: inherit; transition: all 0.3s ease; margin-top: 0.75rem; 
-        }
-        .action-button:hover:not(:disabled) { background-color: #00ff41; color: #0a0a0a; text-shadow: none; }
-        .action-button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .navigation-button { 
-            background-color: #005c1f; border-color: #00ff41; color: #ccffdd;
-            margin-top: 1rem; padding: 0.75rem 1.5rem; font-size: 1.1rem; width: 100%; display: block;
-        }
-        .navigation-button:hover:not(:disabled) { background-color: #00ff41; color: #0a0a0a; }
-
-        /* Details & Countdown */
-        #mission-details-container { display: none; opacity: 0; transition: opacity 0.5s ease-in-out; }
-        #mission-details-container.visible { display: block; opacity: 1; }
+        .date-input-group { display: flex; align-items: center; justify-content: center; gap: 0.35rem; }
         .countdown-digits { letter-spacing: 0.05em; }
 
-        /* Binary Output & Glitch */
-        #binary-output-container { display: none; border: 1px dashed #00cc33; padding: 1rem; margin-top: 1rem; background-color: rgba(0,0,0,0.3); max-height: 250px; overflow-y: auto; position: relative; }
-        #binary-output-container.glitch-active-area { border-color: #FF3333; background-color: rgba(0,0,0,0.5); }
-        #binary-output-container.glitch-active-area #binary-code-content { opacity: 0.6; color: #009920; position: relative; z-index: 0; }
-        #binary-output-container.glitch-active-area #binary-output-title { animation: glitch-color-text-anim 0.5s infinite linear alternate; position: relative; z-index: 5; }
-        .glitch-active-area::before, .glitch-active-area::after { content: 'ERR_DATA_CORRUPTION // SYS_FAULT\AUNSTABLE_SIGNAL // PLZ_RETRY\A0xDEADBEEF // KERNEL_PANIC\A##### // FRAGMENTED_DATA'; position: absolute; top: 0; left: 0; width: 100%; height: 100%; font-size: 1em; opacity: 0; pointer-events: none; z-index: 10; white-space: pre-wrap; overflow: hidden; line-height: 1.2; padding: 0.5rem; box-sizing: border-box; font-family: 'Share Tech Mono', monospace; }
-        .glitch-active-area::before { color: #FF3333; text-shadow: 1px 0px 0px #00FFFF, -1px 0px 0px #FF00FF; animation: glitch-text-anim-complex 0.1s infinite steps(2, jump-none) alternate, glitch-opacity-fadein 0.5s forwards; }
-        .glitch-active-area::after { content: 'ACCESS_DENIED_OVERRIDE\AATTEMPTING_RECOVERY // ...FAIL\AREBOOT_SEQUENCE_INITIATED_ERR'; color: #00FF00; text-shadow: 1px 0px 0px #FF00FF, -1px 0px 0px #00FFFF; animation: glitch-text-anim-complex 0.15s infinite steps(3, jump-none) alternate-reverse, glitch-opacity-fadein 0.7s forwards 0.2s; z-index: 11; }
+        /* --- ESTILOS DE GLITCH --- */
+        #binary-output-container.glitch-active-area { border-color: #FF3333; }
+        #binary-output-container.glitch-active-area #binary-code-content { opacity: 0.6; }
+        #binary-output-container.glitch-active-area #binary-output-title { animation: glitch-color-text-anim 0.5s infinite linear alternate; }
+        .glitch-active-area::before, .glitch-active-area::after { content: 'ERR_DATA_CORRUPTION // SYS_FAULT'; position: absolute; top: 0; left: 0; width: 100%; height: 100%; font-size: 1em; opacity: 0; pointer-events: none; z-index: 10; white-space: pre-wrap; padding: 0.5rem; }
+        .glitch-active-area::before { color: #FF3333; animation: glitch-text-anim-complex 0.1s infinite steps(2, jump-none) alternate, glitch-opacity-fadein 0.5s forwards; }
+        .glitch-active-area::after { content: 'ACCESS_DENIED_OVERRIDE // REBOOT_FAIL'; color: #00FF00; animation: glitch-text-anim-complex 0.15s infinite steps(3, jump-none) alternate-reverse, glitch-opacity-fadein 0.7s forwards 0.2s; }
         @keyframes glitch-opacity-fadein { from { opacity: 0; } to { opacity: 0.15; } }
-        @keyframes glitch-text-anim-complex { 0% { clip-path: inset(15% 0% 70% 0%); transform: translate(-3px, 2px); } 10% { clip-path: inset(80% 0% 5% 0%); transform: translate(4px, -3px); } 20% { clip-path: inset(5% 0% 85% 0%); transform: translate(-2px, -2px); } 30% { clip-path: inset(60% 0% 20% 0%); transform: translate(3px, 4px); } 40% { clip-path: inset(25% 0% 50% 0%); transform: translate(-4px, 1px); } 50% { clip-path: inset(75% 0% 10% 0%); transform: translate(2px, -4px); } 60% { clip-path: inset(10% 0% 65% 0%); transform: translate(-1px, 3px); } 70% { clip-path: inset(50% 0% 30% 0%); transform: translate(4px, -1px); } 80% { clip-path: inset(90% 0% 2% 0%); transform: translate(-3px, -3px); } 90% { clip-path: inset(20% 0% 75% 0%); transform: translate(1px, 2px); } 100% { clip-path: inset(45% 0% 45% 0%); transform: translate(0px, 0px); } }
-        @keyframes glitch-color-text-anim { 0% { color: #ffff00; text-shadow: 0 0 3px #ffff00;} 25% { color: #ff9900; text-shadow: 0 0 3px #ff9900;} 50% { color: #ff3300; text-shadow: 0 0 5px #ff3300;} 75% { color: #cc0000; text-shadow: 0 0 5px #cc0000;} 100% { color: #ff00ff; text-shadow: 0 0 3px #ff00ff;} }
-        .input-error-glitch { animation: input-glitch-animation 0.25s infinite alternate; color: #ff3333; text-shadow: 1px 1px #00ffff, -1px -1px #ff00ff; }
-        @keyframes input-glitch-animation { 0% { transform: translate(1px, -1px); } 25% { transform: translate(-1px, 1px); } 50% { transform: translate(1px, 1px); } 75% { transform: translate(-1px, -1px); } 100% { transform: translate(0px, 0px); } }
+        @keyframes glitch-text-anim-complex { 0% { clip-path: inset(15% 0% 70% 0%); transform: translate(-3px, 2px); } 100% { clip-path: inset(45% 0% 45% 0%); transform: translate(0px, 0px); } }
+        @keyframes glitch-color-text-anim { 0% { color: #ffff00;} 50% { color: #ff3300;} 100% { color: #ff00ff;} }
+        .input-error-glitch { animation: input-glitch-animation 0.25s infinite alternate; color: #ff3333; }
+        @keyframes input-glitch-animation { 0% { transform: translate(1px, -1px); } 100% { transform: translate(-1px, 1px); } }
+
+        /* --- ESTILOS DE TOOLTIPS --- */
+        #discipline-tooltip, #sphere-tooltip { display: none; position: absolute; background-color: #0a0a0a; border: 1px solid #00ff41; padding: 0.75rem; border-radius: 4px; box-shadow: 0 0 10px #00ff41; max-width: 300px; z-index: 110; }
+        .discipline-btn, .info-btn { display: inline-block; background-color: transparent; border: 1px solid #00802B; padding: 0.25rem 0.75rem; margin: 0.25rem; border-radius: 4px; cursor: pointer; transition: all 0.2s ease; }
+        .discipline-btn:hover, .info-btn:hover { background-color: #00802B; color: #ccffdd; }
         
-        /* Bestiary Styles */
-        .clan-grid-item { border: 1px solid #00802B; padding: 1.5rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s ease-in-out; background-color: rgba(0, 20, 0, 0.5); }
-        .clan-grid-item:hover { background-color: #00ff41; color: #0a0a0a; text-shadow: none; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0, 255, 65, 0.4); }
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); align-items: center; justify-content: center; }
-        .modal.active { display: flex; }
-        .modal-content { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .modal-close-btn { transition: all 0.2s ease-in-out; }
-        .modal-close-btn:hover { color: #ff3333; transform: rotate(90deg); }
-        .lore-section { margin-bottom: 1.25rem; }
-        .discipline-btn { display: inline-block; background-color: transparent; border: 1px solid #00802B; padding: 0.25rem 0.75rem; margin: 0.25rem; border-radius: 4px; cursor: pointer; transition: all 0.2s ease; }
-        .discipline-btn:hover { background-color: #00802B; color: #ccffdd; }
-        #discipline-tooltip { display: none; position: absolute; background-color: #0a0a0a; border: 1px solid #00ff41; padding: 0.75rem; border-radius: 4px; box-shadow: 0 0 10px #00ff41; max-width: 300px; z-index: 110; }
-        .date-input-group { display: flex; align-items: center; justify-content: center; gap: 0.35rem; }
+        .speaker { color: #facc15; text-shadow: 0 0 5px #facc15; }
+        .narrator { font-style: italic; color: #9ca3af; }
+        
+        /* --- ESTILO PARA BOTÓN "IR ARRIBA" --- */
+        #go-to-top-btn {
+            display: none;
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1001;
+            border: 1px solid #00ff41;
+            background-color: rgba(0, 20, 0, 0.9);
+            color: #00ff41;
+            cursor: pointer;
+            padding: 0;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 28px;
+            line-height: 50px;
+            text-align: center;
+            transition: all 0.2s ease-in-out;
+        }
+        #go-to-top-btn:hover {
+            background-color: #00ff41;
+            color: #0a0a0a;
+            transform: translateY(-2px);
+        }
+
     </style>
 </head>
 <body class="p-4 md:p-8">
     <div class="terminal-container-bg"></div> 
 
-    <div id="dossier-wrapper" class="content-wrapper dossier-container"> 
+    <!-- =============================================== -->
+    <!--     SECCIÓN PRINCIPAL: VAMPIRO LA MASCARADA     -->
+    <!-- =============================================== -->
+
+    <div id="dossier-wrapper" class="content-wrapper"> 
         <header class="text-center mb-6">
             <h1 class="text-2xl md:text-4xl font-bold">[ DOSSIER: DILUVIO ESCARLATA ]</h1>
             <p class="text-sm">ACCESO CONCEDIDO: USUARIO_██████</p>
@@ -154,20 +176,17 @@
                     <p class="mb-4">El día en que el cielo se rompió, la lluvia comenzó y simplemente… no paró.</p>
                     <p class="mb-4">Al principio, la gente culpó a la temporada de huracanes, inusualmente violenta. Otros, con voz temblorosa, susurraban que era el cambio climático desatado, la antesala del fin del mundo. Nosotros, la gente de la noche, no teníamos respuestas certeras, solo un presentimiento helado que recorría la sangre estancada en nuestras venas.</p>
                     <p class="mb-4">Semanas. Semanas de un aguacero implacable, un llanto constante del cielo.</p>
-                    <p class="mb-4">Fue entonces cuando los más viejos, aquellos que aún recuerdan los ecos de otros eones, comenzaron a murmurar el nombre prohibido, la oscura profecía:</p>
+                    <p class="mb-4">Fue entonces cuando los más viejos, aqueles que aún recuerdan los ecos de otros eones, comenzaron a murmurar el nombre prohibido, la oscura profecía:</p>
                     <p class="text-center text-2xl my-6 animate-pulse block">"—Son las Lágrimas de Kain…"</p>
                     <p class="mb-4">Esto no era una simple tormenta. Era un diluvio. Un castigo divino o infernal, ¿quién podría decirlo?</p>
                 </div>
             </section>
-
-            <div class="w-full h-px bg-green-400 my-6"></div>
-
+            <div class="section-divider"></div>
             <section id="transcript-section">
-                 <h2 class="text-xl font-bold mb-1 text-center">[DECRYPTION: ARCHIVO_CEM_DEAA_GAMMA_7.LOG]</h2>
+                <h2 class="text-xl font-bold mb-1 text-center">[DECRYPTION: ARCHIVO_CEM_DEAA_GAMMA_7.LOG]</h2>
                 <p class="text-xs text-center mb-1"><strong class="text-cyan-500">[CONFIDENCIAL – ARCHIVO INTERNO CLASIFICADO]</strong></p>
                 <p class="text-xs text-center mb-1">CONFERENCIA DEL EPISCOPADO MEXICANO</p>
                 <p class="text-xs text-center mb-4">Departamento de Exorcismos y Asuntos Anómalos (DEAA)</p>
-                
                 <div class="border border-green-500 p-4 space-y-3 bg-black bg-opacity-30">
                     <p><strong class="text-cyan-400">REGISTRO DE INTERROGATORIO – SECCIÓN GAMMA</strong></p>
                     <p><strong class="text-cyan-400">IDENTIFICACIÓN DEL SUJETO:</strong> █████████████ (Amenaza Sobrenatural Activa – Nivel Escarlata)</p>
@@ -193,410 +212,336 @@
                     <p class="text-xs italic text-gray-500">(Fin de la grabación.)</p>
                 </div>
             </section>
-
-            <div class="w-full h-px bg-green-400 my-6"></div>
-
-            <section id="dossier-date-reveal-section" class="text-center p-6 border border-green-500 bg-black bg-opacity-30">
-                <h2 class="text-xl font-bold mb-2">[CONVERGENCIA TEMPORAL INMINENTE]</h2>
-                <p class="text-base text-red-300 mb-1">Tiempo restante hasta el evento "Observación Primaria":</p>
-                <div id="puzzle-countdown-timer" class="text-4xl md:text-5xl font-bold text-red-400 p-3 mb-6 countdown-digits">
-                    <span id="dossier-hours">00</span>:<span id="dossier-minutes">00</span>:<span id="dossier-seconds">00</span>
-                </div>
-                <p class="mb-4">Ingrese el código de acceso temporal para decodificar datos de misión:</p>
-                <div class="flex flex-col sm:flex-row justify-center items-center gap-3">
-                    <input type="text" id="dossier-access-code-input" class="input-field p-2 w-full sm:w-auto flex-grow" placeholder="Ingresar código de acceso">
-                    <button id="dossier-verify-code-btn" class="action-button px-6 py-2 w-full sm:w-auto">VERIFICAR</button>
-                </div>
-                <div id="dossier-error-message-container" class="h-5 mt-2">
-                    <p id="dossier-error-message" class="text-red-500" role="alert" aria-live="assertive"></p>
-                </div>
+            <div class="section-divider"></div>
+            <section id="mission-details-section" class="text-center p-6 border border-green-500 bg-black bg-opacity-30">
                 <div id="mission-details-container"> 
-                    <h3 class="text-2xl font-bold text-yellow-300 mt-6 mb-2">[PROTOCOLO DE MISIÓN ACTIVADO]</h3>
+                    <h3 class="text-2xl font-bold text-yellow-300 mb-2">[PROTOCOLO DE MISIÓN ACTIVADO]</h3>
                     <p class="text-lg text-yellow-200">Nombre de la Operación:</p>
                     <p id="mission-name" class="text-3xl font-bold text-yellow-300 py-2">Cielos Quebrados, Heridas Abiertas</p>
                     <p class="text-lg text-yellow-200 mt-3">Fecha de Inicio de Misión:</p>
                     <p id="mission-start-date" class="text-3xl font-bold text-yellow-300 py-2">28 de Junio de 2025</p>
                 </div>
             </section>
-            <div class="w-full h-px bg-green-400 my-6"></div>
-            <footer class="text-center mt-8">
-                 <button id="proceed-to-terminal-v-btn" class="action-button navigation-button">
-                    [ACCEDER A INTERFAZ DE DATOS V &gt;&gt;]
-                </button>
-                 <button id="proceed-to-bestiary-btn" class="action-button navigation-button">
-                    [ABRIR BESTIARIO DE CLANES &gt;&gt;]
-                </button>
-            </footer>
         </main>
+        <footer class="text-center mt-8 pt-4 border-t border-green-600">
+             <div class="space-y-4">
+                <button id="proceed-to-terminal-v-btn" class="navigation-button"> [ACCEDER A INTERFAZ DE DATOS V &gt;&gt;] </button>
+                <button id="proceed-to-bestiary-btn" class="navigation-button"> [ABRIR BESTIARIO DE CLANES &gt;&gt;] </button>
+                <button id="proceed-to-mage-files-btn" class="navigation-button">[!!] ACCEDER A ARCHIVOS ANÓMALOS (RIESGO ALTO) [!!]</button>
+            </div>
+        </footer>
     </div>
 
     <div id="terminal-v-wrapper" class="content-wrapper hidden-section"> 
         <header class="text-center mb-6">
-            <h1 class="text-2xl md:text-3xl font-bold">[TERMINAL DE DATOS V // PROTOCOLO DE ACCESO RESTRINGIDO]</h1>
+            <h1 class="text-2xl md:text-3xl font-bold">[TERMINAL DE DATOS V // ACCESO RESTRINGIDO]</h1>
             <div class="w-full h-px bg-green-400 my-3"></div>
         </header>
-        <main id="terminal-v-main-content" class="space-y-6">
-            <section id="terminal-v-date-input-section" class="text-center">
-                <p class="mb-3 text-yellow-300">&gt; INGRESE SECUENCIA NUMÉRICA DE REGISTRO INICIO</p>
-                <div id="terminal-v-date-casillas-container" class="flex flex-wrap items-center justify-center gap-x-2 gap-y-2 mb-3"> 
-                    <div class="date-input-group" id="numeric-date-inputs">
-                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 1">
-                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 2">
-                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 3">
-                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 4">
-                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 5">
-                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 6">
-                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 7">
-                        <input type="number" maxlength="1" class="date-char-input" aria-label="Dígito 8">
-                    </div>
+        <main class="space-y-6">
+            <section class="text-center">
+                <p class="mb-3 text-yellow-300">&gt; INGRESE SECUENCIA NUMÉRICA DE REGISTRO</p>
+                <div class="date-input-group" id="numeric-date-inputs">
+                    <input type="number" maxlength="1" class="date-char-input"><input type="number" maxlength="1" class="date-char-input"><input type="number" maxlength="1" class="date-char-input"><input type="number" maxlength="1" class="date-char-input"><input type="number" maxlength="1" class="date-char-input"><input type="number" maxlength="1" class="date-char-input"><input type="number" maxlength="1" class="date-char-input"><input type="number" maxlength="1" class="date-char-input">
                 </div>
-                <button id="terminal-v-verify-date-btn" class="action-button">DECODIFICAR TRANSMISIÓN</button>
-                <div id="terminal-v-message-feedback-container" class="h-6 mt-2">
-                    <p id="terminal-v-message-feedback" class="text-red-500" role="alert" aria-live="assertive"></p>
-                </div>
+                <button id="terminal-v-verify-date-btn" class="action-button mt-4">DECODIFICAR</button>
+                <p id="terminal-v-message-feedback" class="h-6 mt-2 text-red-500"></p>
             </section>
-            <section id="binary-output-container"> 
-                <h2 id="binary-output-title" class="text-xl font-bold text-yellow-300 mb-2">[INICIO DE TRANSMISIÓN // REGISTRO 02 T]</h2>
+            <section id="binary-output-container" class="hidden p-4 mt-4 border border-dashed bg-black/30"> 
+                <h2 id="binary-output-title" class="text-xl font-bold text-yellow-300 mb-2">[INICIO DE TRANSMISIÓN]</h2>
                 <pre id="binary-code-content" class="text-sm whitespace-pre-wrap leading-relaxed"></pre> 
             </section>
         </main>
         <footer class="text-center mt-8 pt-4 border-t border-green-600">
-             <button id="return-to-dossier-btn" class="action-button navigation-button">
-                [&lt;&lt; VOLVER AL DOSSIER PRINCIPAL]
-            </button>
+             <button id="return-to-dossier-btn-1" class="navigation-button"> [&lt;&lt; VOLVER AL DOSSIER PRINCIPAL] </button>
         </footer>
     </div>
 
-    <div id="bestiary-wrapper" class="content-wrapper hidden-section"> 
+    <div id="vampire-bestiary-wrapper" class="content-wrapper hidden-section"> 
         <header class="text-center mb-8">
             <h1 class="text-4xl md:text-5xl font-bold">[ B E S T I A R I O ]</h1>
             <p class="text-lg text-yellow-300">REGISTROS CLASIFICADOS DE CLANES VÁSTAGOS</p>
             <div class="w-1/2 h-px bg-green-400 my-3 mx-auto"></div>
         </header>
         <main>
-            <div id="clan-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            </div>
+            <div id="clan-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </main>
         <footer class="text-center mt-12 pt-6 border-t-2 border-dashed border-green-700">
-             <button id="return-to-dossier-from-bestiary-btn" class="action-button navigation-button">
-                [&lt;&lt; VOLVER AL DOSSIER PRINCIPAL]
-            </button>
-            <p class="text-lg accent-text mt-4">Cualquier avistamiento de estas criaturas comunicarse con su Danger Manager.</p>
+             <button id="return-to-dossier-btn-2" class="navigation-button"> [&lt;&lt; VOLVER AL DOSSIER PRINCIPAL] </button>
         </footer>
     </div>
-
+    
+    <div id="mage-prelude-wrapper" class="content-wrapper hidden-section">
+        <header class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold">[ ADVERTENCIA DE INFILTRACIÓN ]</h1>
+            <p class="text-lg accent-text">Protocolo Gamma - Solo Ojos Autorizados</p>
+        </header>
+        <main class="space-y-5 text-lg leading-relaxed">
+            <p class="narrator">(Fragmento de audio recuperado. Ruido de fondo consistente con interferencia electromagnética severa.)</p>
+            <p><strong class="speaker">[VOZ 1 (calma, autoritaria)]:</strong> ...la anomalía en el sector Roma no fue un Vástago. Las lecturas son inequívocas. Hay una divergencia de la Realidad de origen humano. Un taumaturgo.</p>
+            <p><strong class="speaker" style="color: #6ee7b7;">[VOZ 2 (joven, tensa)]:</strong> ¿Un hechicero? Creí que la Tecnocracia los tenía bajo control.</p>
+            <p><strong class="speaker">[VOZ 1]:</strong> La arrogancia de la Tecnocracia es su mayor debilidad. Creen que el orden puede contener la soberbia del hombre. Olvidan que la fe, incluso la fe herética en la propia voluntad, es una fuerza de la Creación. Estos 'magos' no piden poder. Lo toman. Creen que son dioses en potencia.</p>
+            <p><strong class="speaker" style="color: #6ee7b7;">[VOZ 2]:</strong> ¿Y lo son?</p>
+            <p><strong class="speaker">[VOZ 1]:</strong> Son niños con el poder de reescribir las leyes de Dios. Cada 'milagro' que realizan es una blasfemia que desgarra el tejido de lo posible, atrayendo una retribución que llaman Paradoja. Pero antes de que el universo los castigue, nosotros debemos actuar. El peligro que representan para las almas de los Durmientes es incalculable.</p>
+            <p><strong class="speaker" style="color: #6ee7b7;">[VOZ 2]:</strong> ¿Cuáles son las órdenes?</p>
+            <p><strong class="speaker">[VOZ 1]:</strong> Desclasifico los archivos sobre sus 'Tradiciones'. Son sectas, cultos de orgullo. Cada uno con su propia herejía sobre cómo debe funcionar el mundo. Debes entender sus paradigmas, sus herramientas, sus debilidades. Aprende a identificar a un hermético por su soberbia, a una verbena por su olor a sangre y tierra. Prepárate. La próxima anomalía no puede tomarnos por sorpresa.</p>
+        </main>
+        <footer class="text-center mt-8">
+            <button id="mage-access-bestiary-btn" class="navigation-button">[ ACCEDER A ARCHIVOS DE PARADIGMAS DIVERGENTES >> ]</button>
+            <button id="return-to-dossier-btn-3" class="navigation-button mt-4">[ << CERRAR CANAL INSEGURO / VOLVER AL DOSSIER ]</button>
+        </footer>
+    </div>
+    
+    <div id="mage-bestiary-wrapper" class="content-wrapper hidden-section">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold">[ ÍNDICE DE PARADIGMAS MÍSTICOS ]</h1>
+            <p class="text-lg accent-text">Clasificación de Agentes de la Divergencia (Tradiciones)</p>
+        </header>
+        <main>
+            <div id="tradition-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+            <div class="section-divider"></div>
+            <h2 class="text-2xl text-center font-bold mb-4">Conceptos Tácticos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="mage-concepts-grid">
+                <button data-concept="aretes" class="concept-item">Aretes</button>
+                <button data-concept="esferas" class="concept-item">Las Esferas</button>
+                <button data-concept="quinta" class="concept-item">Quintaesencia y Paradoja</button>
+            </div>
+            <div class="section-divider"></div>
+            <button id="historia-expanded-btn" class="navigation-button">[ ACCEDER A CRÓNICAS: LA GUERRA DE LA ASCENSIÓN ]</button>
+        </main>
+        <footer class="text-center mt-12 pt-6 border-t-2 border-dashed border-green-700">
+             <button id="return-to-dossier-btn-4" class="navigation-button">[ << CERRAR CANAL INSEGURO / VOLVER AL DOSSIER ]</button>
+        </footer>
+    </div>
+    
     <div id="clan-modal" class="modal">
         <div class="content-wrapper modal-content w-11/12 max-w-3xl max-h-[90vh] flex flex-col">
-            <header class="flex justify-between items-center pb-3 border-b border-green-700 mb-4 flex-shrink-0">
+            <header class="flex justify-between items-center pb-3 border-b border-green-700 mb-4">
                 <h2 id="modal-clan-name" class="text-3xl font-bold"></h2>
-                <button id="modal-close-btn" class="text-4xl font-bold modal-close-btn">&times;</button>
+                <button class="text-4xl font-bold modal-close-btn">&times;</button>
             </header>
             <div class="overflow-y-auto pr-2">
-                <section class="lore-section">
-                    <h3 class="text-xl font-bold text-yellow-300 mb-2">APODO</h3>
-                    <p id="modal-clan-nickname" class="text-base"></p>
-                </section>
-                <div class="w-full h-px bg-green-700 my-4"></div>
-                <section class="lore-section">
-                    <h3 class="text-xl font-bold text-yellow-300 mb-2">TRASFONDO AMPLIADO</h3>
-                    <p id="modal-clan-background" class="text-base"></p>
-                </section>
-                <div class="w-full h-px bg-green-700 my-4"></div>
-                <section class="lore-section">
-                    <h3 class="text-xl font-bold text-yellow-300 mb-2">PUNTOS DE AVISTAMIENTO</h3>
-                    <p id="modal-clan-sighting-points" class="text-base"></p>
-                </section>
-                <div class="w-full h-px bg-green-700 my-4"></div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                    <div class="lore-section">
-                        <h3 class="text-xl font-bold text-yellow-300 mb-2">APARIENCIA</h3>
-                        <p id="modal-clan-appearance" class="text-base"></p>
-                    </div>
-                    <div class="lore-section">
-                        <h3 class="text-xl font-bold text-yellow-300 mb-2">ORGANIZACIÓN</h3>
-                        <p id="modal-clan-organization" class="text-base"></p>
-                    </div>
-                </div>
-                <div class="w-full h-px bg-green-700 my-4"></div>
-                <section class="lore-section">
-                    <h3 class="text-xl font-bold text-yellow-300 mb-2">DISCIPLINAS DE CLAN</h3>
-                    <div id="modal-clan-disciplines" class="flex flex-wrap gap-2"></div>
-                </section>
-                <div class="w-full h-px bg-green-700 my-4"></div>
-                <section class="lore-section">
-                    <h3 class="text-xl font-bold text-yellow-300 mb-2">DEFECTO</h3>
-                    <p id="modal-clan-weakness" class="text-base"></p>
-                </section>
+                <h3 class="text-xl font-bold text-yellow-300">APODO:</h3> <p id="modal-clan-nickname"></p> <div class="section-divider"></div>
+                <h3 class="text-xl font-bold text-yellow-300">TRASFONDO:</h3> <p id="modal-clan-background"></p> <div class="section-divider"></div>
+                <h3 class="text-xl font-bold text-yellow-300">DISCIPLINAS:</h3> <div id="modal-clan-disciplines" class="flex flex-wrap gap-2"></div> <div class="section-divider"></div>
+                <h3 class="text-xl font-bold text-yellow-300">DEFECTO:</h3> <p id="modal-clan-weakness"></p>
             </div>
         </div>
     </div>
     <div id="discipline-tooltip"></div>
     
+    <div id="mage-modal" class="modal">
+        <div class="content-wrapper modal-content w-11/12 max-w-3xl max-h-[90vh] flex flex-col">
+            <header class="flex justify-between items-center pb-3 border-b border-green-700 mb-4">
+                <h2 id="mage-modal-title" class="text-3xl font-bold"></h2>
+                <button class="text-4xl font-bold modal-close-btn">&times;</button>
+            </header>
+            <div id="mage-modal-body" class="overflow-y-auto pr-2"></div>
+        </div>
+    </div>
+    <div id="sphere-tooltip"></div>
+    
+    <button id="go-to-top-btn" title="Ir arriba">▲</button>
+
     <audio id="sound-click" src="https://cdn.jsdelivr.net/gh/ManzDev/cursos-assets/js/js-sound-click.mp3" preload="auto"></audio>
     <audio id="sound-success" src="https://cdn.jsdelivr.net/gh/ManzDev/cursos-assets/js/js-sound-success.mp3" preload="auto"></audio>
     <audio id="sound-error" src="https://cdn.jsdelivr.net/gh/ManzDev/cursos-assets/js/js-sound-error.mp3" preload="auto"></audio>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- DATA OBJECTS ---
-            const V20_DATA = { /* ... Contenido de V20_DATA aquí ... */
-                clans: { assamita: { name: "Assamita", nickname: "Asesinos, Sarracenos", appearance: "Suelen tener rasgos de Oriente Medio, piel oscura y constitución atlética. Visten de forma funcional, aunque los más viejos pueden preferir ropajes tradicionales.", haven: "Prefieren refugios remotos y seguros, como fortalezas en el desierto o apartamentos discretos y bien protegidos en la ciudad, siempre con múltiples rutas de escape.", background: "Los Assamitas son un clan de asesinos y guerreros del Medio Oriente, conocidos por su búsqueda de la pureza a través de la diablerie y su maestría en el arte de matar. Operan con un estricto código de honor y ven el asesinato como un sacramento.", organization: "Estructura jerárquica y celular. Un líder, el 'Viejo de la Montaña', dirige desde su fortaleza en Alamut. Las misiones se asignan con precisión y secretismo.", weakness: "Aura reconocible para otros vampiros; Sufren un dado más de daño por fuego y luz solar; Adicción a la sangre de vampiro (diablerie) una vez probada.", disciplines: ["Extinción", "Ofuscación", "Celeridad"] }, brujah: { name: "Brujah", nickname: "Chusma, Filósofos Guerreros", appearance: "Cualquier estilo que grite rebelión y desafío: cuero, botas, crestas punk, ropa de protesta. Buscan impactar y proyectar una imagen de inconformismo.", haven: "Lugares comunales y a menudo desordenados: almacenes abandonados, locales de okupas, sótanos de bares punk o cualquier lugar donde puedan reunirse y debatir acaloradamente.", background: "Antaño filósofos y reyes guerreros, los Brujah modernos son vistos a menudo como una turba de rebeldes, anarquistas y agitadores. Poseen una pasión feroz por sus ideales, aunque a menudo están en desacuerdo sobre cuáles son, y son rápidos para la ira y la acción.", organization: "Anárquica en apariencia, pero a menudo se organizan en torno a líderes carismáticos o causas comunes. Valoran la libertad individual por encima de la estructura formal.", weakness: "Frenesí más fácil (-2 dificultad a resistir).", disciplines: ["Potencia", "Celeridad", "Presencia"] }, setita: { name: "Seguidores de Set", nickname: "Serpientes, Tentadores", appearance: "A menudo atractivos y con un aire exótico y seductor, con influencias egipcias o africanas. Visten para seducir y corromper, usando la moda como una herramienta más.", haven: "Templos ocultos dedicados a Set, fumaderos de opio, clubes nocturnos de mala muerte o apartamentos de lujo donde se celebran fiestas decadentes. Siempre lugares oscuros y llenos de secretos.", background: "Los Setitas, o Seguidores de Set, son corruptores y traficantes de secretos, fe y vicios. Adoran a su oscuro dios Set y buscan minar la sociedad mortal e inmortal desde dentro, creyendo que la entropía y la oscuridad son el estado natural del universo.", organization: "Cultista y jerárquica. Se organizan en templos liderados por un sumo sacerdote. La lealtad es al clan y a Set por encima de cualquier secta.", weakness: "Sufren dos niveles de salud de daño adicionales por la luz solar. Adictos a los vicios y placeres, penalización a resistir tentaciones.", disciplines: ["Serpentis", "Ofuscación", "Presencia"] }, gangrel: { name: "Gangrel", nickname: "Forasteros, Animales", appearance: "Aspecto rudo y funcional. Suelen tener cicatrices, tatuajes y rasgos que se van volviendo más animalescos con el tiempo. Su ropa está hecha para durar en la intemperie.", haven: "No suelen tener refugios permanentes. Duermen donde pueden, a menudo en parques, cuevas, cementerios o incluso fundiéndose con la tierra misma. Valoran la movilidad.", background: "Los Gangrel son nómadas y salvajes, más en sintonía con la Bestia Interior que la mayoría de los Vástagos. Son supervivientes y a menudo prefieren la compañía de animales a la de otros vampiros, desconfiando de la política de la Jyhad.", organization: "Totalmente individualistas. No tienen una organización formal. Se respetan las hazañas y la fuerza personal, y a veces se reúnen en 'círculos' o 'bandadas'.", weakness: "Ganan un rasgo animal (físico o de comportamiento) cada vez que entran en frenesí.", disciplines: ["Animalismo", "Fortaleza", "Protean"] }, giovanni: { name: "Giovanni", nickname: "Nigromantes, Usureros", appearance: "Conservadores y de aspecto adinerado, casi siempre de ascendencia italiana. Prefieren trajes caros y un aspecto impecable que proyecte poder y riqueza.", haven: "Mansiones familiares, mausoleos, funerarias o las sedes de sus corporaciones. Lugares que reflejen su riqueza y su conexión con la muerte.", background: "Una familia incestuosa de nigromantes y financistas italianos, los Giovanni valoran la riqueza, el poder y los secretos de la muerte por encima de todo. Su lealtad es primordialmente hacia la familia, no hacia la Camarilla o el Sabbat.", organization: "Estrictamente familiar y jerárquica. El cabeza de familia, el 'Anziano', dicta las reglas desde su base en Venecia. La traición se paga con la Muerte Final.", weakness: "Su mordisco causa un dolor insoportable (Beso de la Muerte). Solo pueden alimentarse de mortales; la sangre animal no les sustenta.", disciplines: ["Potencia", "Dominación", "Nigromancia"] }, lasombra: { name: "Lasombra", nickname: "Guardianes, Magisters", appearance: "Elegantes, impecables y a menudo con rasgos mediterráneos (españoles o italianos). Visten para impresionar y dominar, prefiriendo el negro y los colores oscuros.", haven: "Penthouses de lujo, mansiones sombrías, sedes corporativas o iglesias profanadas. Lugares que demuestren su poder y control.", background: "Elegantes y depredadores, los Lasombra son el corazón y el alma del Sabbat. Maestros de la intriga y las sombras, se ven a sí mismos como la cúspide de la evolución vampírica y a los demás como peones en su gran juego de poder eterno.", organization: "Meritocrática y despiadada. El poder se gana a través de la astucia y la fuerza. Respetan a aquellos que pueden tomar el poder y mantenerlo, sin importar los medios.", weakness: "No se reflejan (espejos, agua, cámaras, etc.). Sufren un nivel de daño agravado adicional por la luz solar.", disciplines: ["Dominación", "Obtenebración", "Potencia"] }, malkavian: { name: "Malkavian", nickname: "Lunáticos, Oráculos", appearance: "Su apariencia es impredecible y varía enormemente, reflejando su estado mental. Pueden ir desde impecables hasta completamente desaliñados, a menudo con un detalle extraño o fuera de lugar.", haven: "Hospitales psiquiátricos abandonados, apartamentos caóticos llenos de arte extraño, bibliotecas olvidadas o cualquier lugar que resuene con su percepción única de la realidad.", background: "Los Malkavian están todos irremediablemente locos, pero su locura a menudo les concede una extraña perspicacia, sabiduría y visiones proféticas. Su 'red de la demencia' los conecta de formas misteriosas, compartiendo ideas y visiones a través de la distancia.", organization: "Inexistente en la superficie, pero la Red de la Demencia les proporciona una extraña cohesión. A veces actúan al unísono sin una razón aparente para los extraños.", weakness: "Sufren un Trastorno Mental incurable desde el Abrazo.", disciplines: ["Auspex", "Dementación", "Ofuscación"] }, nosferatu: { name: "Nosferatu", nickname: "Ratas de Alcantarilla, Leprosos", appearance: "Horriblemente deformados, sin dos Nosferatu iguales en su fealdad. Son monstruosos hasta el punto de que no pueden interactuar con la sociedad mortal sin causar terror.", haven: "El subsuelo es su dominio: alcantarillas, túneles de metro abandonados, catacumbas y sótanos olvidados. Crean redes de túneles conocidas como 'madrigueras'.", background: "Horriblemente deformados por el Abrazo, los Nosferatu se ocultan en las sombras, convirtiéndose en maestros del sigilo, la información y los secretos urbanos. Venden información al mejor postor, lo que los hace indispensables y temidos.", organization: "Comunitaria y basada en la supervivencia. Se agrupan en 'crías' o 'nidadas' por protección mutua y comparten información para mantenerse a salvo de un mundo que los rechaza.", weakness: "Apariencia monstruosa (Apariencia 0).", disciplines: ["Animalismo", "Ofuscación", "Potencia"] }, ravnos: { name: "Ravnos", nickname: "Embaucadores, Gitanos", appearance: "A menudo con rasgos de Europa del Este o la India (romaníes). Su estilo es ecléctico y viajero, práctico pero con un toque de ostentación o desafío.", haven: "Campamentos de caravanas, moteles de carretera, coches robados, o cualquier lugar temporal que les permita moverse rápidamente. No se atan a un solo lugar.", background: "Viajeros, embaucadores y maestros de la ilusión, los Ravnos son un clan disperso, a menudo desconfiado por los demás Vástagos debido a su reputación de engaño y anarquía. Valoran la libertad y desafían las tradiciones de la Camarilla y el Sabbat.", organization: "Basada en la familia y la lealtad a pequeños grupos viajeros. Siguen un estricto código interno de conducta y hospitalidad, pero son ferozmente independientes.", weakness: "Adicción a un vicio específico (engaño, robo, juego, etc.) que deben satisfacer regularmente.", disciplines: ["Animalismo", "Fortaleza", "Quimerismo"] }, toreador: { name: "Toreador", nickname: "Artesanos, Degenerados", appearance: "La cúspide de la moda y la belleza. Siempre visten con las últimas tendencias o con un estilo clásico impecable. Su apariencia es una de sus principales armas.", haven: "Lofts de artistas, galerías de arte, teatros, apartamentos de diseño o cualquier lugar que sea estéticamente bello y esté en el centro de la escena cultural.", background: "Amantes de la belleza y el arte en todas sus formas, los Toreador son los diletantes y artistas del mundo vampírico. Se sienten atraídos por los mortales talentosos y las últimas tendencias, y a menudo son los vampiros más cercanos a la sociedad humana.", organization: "Redes sociales fluidas y salones. Su estatus se basa en su influencia cultural, su gusto y su popularidad. Las fiestas y las exposiciones son sus campos de batalla.", weakness: "Fascinación por la belleza; pueden quedar absortos (-1 a las tiradas) ante algo o alguien hermoso, a discreción del Narrador.", disciplines: ["Auspex", "Celeridad", "Presencia"] }, tremere: { name: "Tremere", nickname: "Brujos, Usurpadores", appearance: "Conservadores y a menudo con un aire académico o severo. Suelen vestir de forma formal o con túnicas rituales en sus capillas. Suelen llevar un símbolo del clan.", haven: "Capillas fuertemente protegidas, a menudo en universidades, bibliotecas antiguas o edificios históricos. Sus refugios son laboratorios y fortalezas arcanas.", background: "Un clan de hechiceros de la sangre, los Tremere son disciplinados, jerárquicos y a menudo temidos por su poder taumatúrgico. Nacieron de magos mortales que robaron la inmortalidad, y su estructura piramidal exige una estricta lealtad.", organization: "Estricta pirámide de poder. La lealtad se jura hacia arriba, desde el aprendiz hasta el regente de la capilla, y en última instancia al Consejo de los Siete en Viena.", weakness: "Juramento de Sangre al Consejo de los Siete (un paso hacia el vínculo con cada uno de los siete que componen su círculo interno). Deben beber sangre de otros Tremere al ser Abrazados.", disciplines: ["Auspex", "Dominación", "Taumaturgia"] }, tzimisce: { name: "Tzimisce", nickname: "Demonios, Voivodas", appearance: "Pueden tener cualquier apariencia que deseen gracias a Vicisitud. Muchos adoptan formas aterradoras o inhumanas para distanciarse de la 'arcilla mortal'. Otros mantienen una apariencia aristocrática del Viejo Mundo.", haven: "Ancestrales castillos, mansiones apartadas, o laboratorios médicos. Siempre están ligados a su tierra y necesitan dormir cerca de ella.", background: "Territoriales, eruditos y a menudo inhumanos, los Tzimisce son los 'demonios' del Viejo Mundo, maestros de la carne y el hueso a través de su Disciplina Vicisitud. Ven a los demás como materia prima para sus experimentos y arte.", organization: "Feudal y solitaria. Respetan el protocolo y la hospitalidad, pero cada Tzimisce es el señor absoluto de su dominio. La lealtad es a sí mismos primero.", weakness: "Deben dormir cerca de al menos dos puñados de tierra de un lugar importante para ellos (generalmente su lugar de nacimiento o muerte como mortal).", disciplines: ["Animalismo", "Auspex", "Vicisitud"] }, ventrue: { name: "Ventrue", nickname: "Sangre Azul, Patricios", appearance: "Impecables, conservadores y caros. Prefieren la ropa de alta costura y de negocios que proyecta autoridad y éxito. La apariencia de poder es fundamental.", haven: "Penthouses ejecutivos, mansiones en barrios ricos, clubes de élite. Lugares que reflejen su estatus y control sobre el mundo mortal.", background: "Los 'Sangre Azul' de los Vástagos, los Ventrue se ven a sí mismos como los líderes natos de la sociedad vampírica. Valoran la tradición, el poder y la influencia, y a menudo ocupan posiciones de liderazgo en la Camarilla.", organization: "Corporativa y aristocrática. Se organizan en juntas directivas y linajes. El estatus se gana a través de la riqueza, la influencia y el linaje. Valoran el orden y la estabilidad.", weakness: "Restricción alimentaria selectiva (solo pueden alimentarse de un tipo específico de sangre mortal, ej: 'solo rubias', 'solo clérigos').", disciplines: ["Dominación", "Fortaleza", "Presencia"] }, caitiff: { name: "Caitiff", nickname: "Sin Clan, Basura", appearance: "Tan variada como la humanidad. No tienen un aspecto definido, a menudo adoptan estilos que les permiten mezclarse o que reflejan su vida en los márgenes de la sociedad.", haven: "Cualquier lugar donde puedan pasar desapercibidos. Apartamentos baratos, refugios para desamparados, alcantarillas... son los supervivientes definitivos.", background: "Los sin clan, los Caitiff no muestran las características ni las debilidades de un clan en particular. Son los parias de la sociedad vampírica, a menudo despreciados y desconfiados por todos. Su no-vida es una lucha constante por la supervivencia y la identidad.", organization: "Ninguna. Son completamente individualistas, aunque a veces forman pequeñas bandas o se aferran a otros marginados por protección mutua.", weakness: "Coste de PX para nuevas Disciplinas x6 (en lugar de x5). Marginados sociales, a menudo con dificultad para ganar Posición.", disciplines: ["Ninguna como clan. Eligen al ser creados."] }
-                },
-                disciplines_info: { "Animalismo": "Permite comunicarse y controlar a los animales, e incluso invocar a la Bestia interior.", "Auspex": "Concede sentidos sobrenaturales, percepción extrasensorial y la capacidad de leer auras y mentes.", "Celeridad": "Otorga una velocidad y reflejos sobrehumanos, permitiendo acciones múltiples en un instante.", "Dementación": "Permite proyectar la propia locura en otros, causando confusión, visiones y terror.", "Dominación": "Controla la mente de otros mediante el contacto visual y órdenes directas.", "Extinción": "Disciplina de los Assamitas que les permite manipular la sangre y silenciar a sus víctimas.", "Fortaleza": "Proporciona una resistencia y dureza sobrenaturales, permitiendo ignorar heridas.", "Nigromancia": "El arte de comunicarse y comandar a los muertos y los espíritus del inframundo.", "Obtenebración": "Permite manipular y controlar las sombras y la oscuridad misma.", "Ofuscación": "La capacidad de volverse invisible y ocultar la presencia a los demás sentidos.", "Potencia": "Otorga una fuerza física increíble, muy por encima de los límites mortales.", "Presencia": "Permite atraer, influir y dominar las emociones de los demás sin decir una palabra.", "Protean": "La capacidad de cambiar de forma, desde hacer crecer garras hasta transformarse en animal o niebla.", "Quimerismo": "Crea ilusiones tan reales que pueden engañar a todos los sentidos e incluso causar daño.", "Serpentis": "Disciplina de los Setitas que les otorga poderes reptilianos, como una lengua bífida o escamas.", "Taumaturgia": "La hechicería de la sangre, una forma rígida y poderosa de magia vampírica.", "Vicisitud": "El terrible poder de moldear la carne y el hueso, tanto el propio como el de otros." }
-            };
-
-            // --- Contenedores Principales ---
-            const dossierWrapper = document.getElementById('dossier-wrapper');
-            const terminalVWrapper = document.getElementById('terminal-v-wrapper');
-            const bestiaryWrapper = document.getElementById('bestiary-wrapper');
-
-            // --- Dossier: Controles ---
-            const dossierAccessCodeInput = document.getElementById('dossier-access-code-input');
-            const dossierVerifyCodeBtn = document.getElementById('dossier-verify-code-btn');
-            const missionDetailsContainer = document.getElementById('mission-details-container');
-            const dossierErrorMessageEl = document.getElementById('dossier-error-message');
-            const dossierHoursEl = document.getElementById('dossier-hours');
-            const dossierMinutesEl = document.getElementById('dossier-minutes');
-            const dossierSecondsEl = document.getElementById('dossier-seconds');
-            const DOSSIER_CORRECT_ACCESS_CODE = "2 de Tamuz 5785";
-            const DOSSIER_TARGET_DATE_TIMESTAMP = new Date(2025, 5, 28, 0, 0, 0).getTime();
-            let dossierPuzzleCountdownInterval;
-            let dossierGlitchTimeout;
-            
-            // --- Terminal V: Controles ---
-            const terminalVVerifyDateBtn = document.getElementById('terminal-v-verify-date-btn');
-            const terminalVMessageFeedbackEl = document.getElementById('terminal-v-message-feedback');
-            const binaryOutputContainerEl = document.getElementById('binary-output-container');
-            const binaryCodeContentEl = document.getElementById('binary-code-content');
-            const binaryOutputTitleEl = document.getElementById('binary-output-title');
-            const terminalVDateInputs = Array.from(document.querySelectorAll('#numeric-date-inputs .date-char-input'));
-            const TERMINAL_V_TARGET_NUMERIC_DATE = "28062025";
-            const TERMINAL_V_MESSAGE_TO_ENCODE = "Eligio Ancona 106 Santa María la Ribera V:";
-            let terminalVGlitchTimeout;
-
-            // --- Bestiario: Controles ---
-            const clanGrid = document.getElementById('clan-grid');
-            const modal = document.getElementById('clan-modal');
-            const modalClanName = document.getElementById('modal-clan-name');
-            const modalClanNickname = document.getElementById('modal-clan-nickname');
-            const modalClanAppearance = document.getElementById('modal-clan-appearance');
-            const modalClanSightingPoints = document.getElementById('modal-clan-sighting-points');
-            const modalClanOrganization = document.getElementById('modal-clan-organization');
-            const modalClanBackground = document.getElementById('modal-clan-background');
-            const modalClanDisciplines = document.getElementById('modal-clan-disciplines');
-            const modalClanWeakness = document.getElementById('modal-clan-weakness');
-            const closeModalBtn = document.getElementById('modal-close-btn');
-            const tooltip = document.getElementById('discipline-tooltip');
-
-            // --- Botones de Navegación ---
-            const proceedToTerminalVBtn = document.getElementById('proceed-to-terminal-v-btn');
-            const proceedToBestiaryBtn = document.getElementById('proceed-to-bestiary-btn');
-            const returnToDossierBtn = document.getElementById('return-to-dossier-btn');
-            const returnToDossierFromBestiaryBtn = document.getElementById('return-to-dossier-from-bestiary-btn');
-
-            // --- Sonidos (compartidos) ---
-            const soundClick = document.getElementById('sound-click');
-            const soundSuccess = document.getElementById('sound-success');
-            const soundError = document.getElementById('sound-error');
-
-            function playSound(soundElement) {
-                if (soundElement) {
-                    soundElement.currentTime = 0;
-                    soundElement.play().catch(e => console.warn("Error al reproducir sonido:", e.message));
-                }
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- INICIO: BASES DE DATOS RESTAURADAS Y CORREGIDAS ---
+        const V20_DATA = {
+            clans: { assamita: { name: "Assamita", nickname: "Asesinos, Sarracenos", disciplines: ["Extinción", "Ofuscación", "Celeridad"], weakness: "Aura reconocible para otros vampiros; Sufren un dado más de daño por fuego y luz solar; Adicción a la sangre de vampiro (diablerie) una vez probada.", background: "Los Assamitas son un clan de asesinos y guerreros del Medio Oriente, conocidos por su búsqueda de la pureza a través de la diablerie y su maestría en el arte de matar. Operan con un estricto código de honor y ven el asesinato como un sacramento." }, brujah: { name: "Brujah", nickname: "Chusma, Filósofos Guerreros", disciplines: ["Potencia", "Celeridad", "Presencia"], weakness: "Frenesí más fácil (-2 dificultad a resistir).", background: "Antaño filósofos y reyes guerreros, los Brujah modernos son vistos a menudo como una turba de rebeldes, anarquistas y agitadores. Poseen una pasión feroz por sus ideales, aunque a menudo están en desacuerdo sobre cuáles son, y son rápidos para la ira y la acción." }, setita: { name: "Seguidores de Set", nickname: "Serpientes, Tentadores", disciplines: ["Serpentis", "Ofuscación", "Presencia"], weakness: "Sufren dos niveles de salud de daño adicionales por la luz solar. Adictos a los vicios y placeres, penalización a resistir tentaciones.", background: "Los Setitas, o Seguidores de Set, son corruptores y traficantes de secretos, fe y vicios. Adoran a su oscuro dios Set y buscan minar la sociedad mortal e inmortal desde dentro, creyendo que la entropía y la oscuridad son el estado natural del universo." }, gangrel: { name: "Gangrel", nickname: "Forasteros, Animales", disciplines: ["Animalismo", "Fortaleza", "Protean"], weakness: "Ganan un rasgo animal (físico o de comportamiento) cada vez que entran en frenesí.", background: "Los Gangrel son nómadas y salvajes, más en sintonía con la Bestia Interior que la mayoría de los Vástagos. Son supervivientes y a menudo prefieren la compañía de animales a la de otros vampiros, desconfiando de la política de la Jyhad." }, giovanni: { name: "Giovanni", nickname: "Nigromantes, Usureros", disciplines: ["Potencia", "Dominación", "Nigromancia"], weakness: "Su mordisco causa un dolor insoportable (Beso de la Muerte). Solo pueden alimentarse de mortales; la sangre animal no les sustenta.", background: "Una familia incestuosa de nigromantes y financistas italianos, los Giovanni valoran la riqueza, el poder y los secretos de la muerte por encima de todo. Su lealtad es primordialmente hacia la familia, no hacia la Camarilla o el Sabbat." }, lasombra: { name: "Lasombra", nickname: "Guardianes, Magisters", disciplines: ["Dominación", "Obtenebración", "Potencia"], weakness: "No se reflejan (espejos, agua, cámaras, etc.). Sufren un nivel de daño agravado adicional por la luz solar.", background: "Elegantes y depredadores, los Lasombra son el corazón y el alma del Sabbat. Maestros de la intriga y las sombras, se ven a sí mismos como la cúspide de la evolución vampírica y a los demás como peones en su gran juego de poder eterno." }, malkavian: { name: "Malkavian", nickname: "Lunáticos, Oráculos", disciplines: ["Auspex", "Dementación", "Ofuscación"], weakness: "Sufren un Trastorno Mental incurable desde el Abrazo.", background: "Los Malkavian están todos irremediablemente locos, pero su locura a menudo les concede una extraña perspicacia, sabiduría y visiones proféticas. Su 'red de la demencia' los conecta de formas misteriosas, compartiendo ideas y visiones a través de la distancia." }, nosferatu: { name: "Nosferatu", nickname: "Ratas de Alcantarilla, Leprosos", disciplines: ["Animalismo", "Ofuscación", "Potencia"], weakness: "Apariencia monstruosa (Apariencia 0).", background: "Horriblemente deformados por el Abrazo, los Nosferatu se ocultan en las sombras, convirtiéndose en maestros del sigilo, la información y los secretos urbanos. Venden información al mejor postor, lo que los hace indispensables y temidos." }, ravnos: { name: "Ravnos", nickname: "Embaucadores, Gitanos", disciplines: ["Animalismo", "Fortaleza", "Quimerismo"], weakness: "Adicción a un vicio específico (engaño, robo, juego, etc.) que deben satisfacer regularmente.", background: "Viajeros, embaucadores y maestros de la ilusión, los Ravnos son un clan disperso, a menudo desconfiado por los demás Vástagos debido a su reputación de engaño y anarquía. Valoran la libertad y desafían las tradiciones de la Camarilla y el Sabbat." }, toreador: { name: "Toreador", nickname: "Artesanos, Degenerados", disciplines: ["Auspex", "Celeridad", "Presencia"], weakness: "Fascinación por la belleza; pueden quedar absortos (-1 a las tiradas) ante algo o alguien hermoso, a discreción del Narrador.", background: "Amantes de la belleza y el arte en todas sus formas, los Toreador son los diletantes y artistas del mundo vampírico. Se sienten atraídos por los mortales talentosos y las últimas tendencias, y a menudo son los vampiros más cercanos a la sociedad humana." }, tremere: { name: "Tremere", nickname: "Brujos, Usurpadores", disciplines: ["Auspex", "Dominación", "Taumaturgia"], weakness: "Juramento de Sangre al Consejo de los Siete (un paso hacia el vínculo con cada uno de los siete que componen su círculo interno). Deben beber sangre de otros Tremere al ser Abrazados.", background: "Un clan de hechiceros de la sangre, los Tremere son disciplinados, jerárquicos y a menudo temidos por su poder taumatúrgico. Nacieron de magos mortales que robaron la inmortalidad, y su estructura piramidal exige una estricta lealtad." }, tzimisce: { name: "Tzimisce", nickname: "Demonios, Voivodas", disciplines: ["Animalismo", "Auspex", "Vicisitud"], weakness: "Deben dormir cerca de al menos dos puñados de tierra de un lugar importante para ellos (generalmente su lugar de nacimiento o muerte como mortal).", background: "Territoriales, eruditos y a menudo inhumanos, los Tzimisce son los 'demonios' del Viejo Mundo, maestros de la carne y el hueso a través de su Disciplina Vicisitud. Ven a los demás como materia prima para sus experimentos y arte." }, ventrue: { name: "Ventrue", nickname: "Sangre Azul, Patricios", disciplines: ["Dominación", "Fortaleza", "Presencia"], weakness: "Restricción alimentaria selectiva (solo pueden alimentarse de un tipo específico de sangre mortal, ej: 'solo rubias', 'solo clérigos').", background: "Los 'Sangre Azul' de los Vástagos, los Ventrue se ven a sí mismos como los líderes natos de la sociedad vampírica. Valoran la tradición, el poder y la influencia, y a menudo ocupan posiciones de liderazgo en la Camarilla." }, caitiff: { name: "Caitiff", nickname: "Sin Clan, Basura", disciplines: ["Ninguna como clan"], weakness: "Coste de PX para nuevas Disciplinas x6 (en lugar de x5). Marginados sociales, a menudo con dificultad para ganar Posición.", background: "Los sin clan, los Caitiff no muestran las características ni las debilidades de un clan en particular. Son los parias de la sociedad vampírica, a menudo despreciados y desconfiados por todos. Su no-vida es una lucha constante por la supervivencia y la identidad." } },
+            disciplines_info: { "Animalismo": "Permite comunicarse y controlar a los animales, e incluso invocar a la Bestia interior.", "Auspex": "Concede sentidos sobrenaturales, percepción extrasensorial y la capacidad de leer auras y mentes.", "Celeridad": "Otorga una velocidad y reflejos sobrehumanos, permitiendo acciones múltiples en un instante.", "Dementación": "Permite proyectar la propia locura en otros, causando confusión, visiones y terror.", "Dominación": "Controla la mente de otros mediante el contacto visual y órdenes directas.", "Extinción": "Disciplina de los Assamitas que les permite manipular la sangre y silenciar a sus víctimas.", "Fortaleza": "Proporciona una resistencia y dureza sobrenaturales, permitiendo ignorar heridas.", "Nigromancia": "El arte de comunicarse y comandar a los muertos y los espíritus del inframundo.", "Obtenebración": "Permite manipular y controlar las sombras y la oscuridad misma.", "Ofuscación": "La capacidad de volverse invisible y ocultar la presencia a los demás sentidos.", "Potencia": "Otorga una fuerza física increíble, muy por encima de los límites mortales.", "Presencia": "Permite atraer, influir y dominar las emociones de los demás sin decir una palabra.", "Protean": "La capacidad de cambiar de forma, desde hacer crecer garras hasta transformarse en animal o niebla.", "Quimerismo": "Crea ilusiones tan reales que pueden engañar a todos los sentidos e incluso causar daño.", "Serpentis": "Disciplina de los Setitas que les otorga poderes reptilianos, como una lengua bífida o escamas.", "Taumaturgia": "La hechicería de la sangre, una forma rígida y poderosa de magia vampírica.", "Vicisitud": "El terrible poder de moldear la carne y el hueso, tanto el propio como el de otros." }
+        };
+        const MAGE_DATA_BASE = {
+            traditions: { adeptus_virtuales: { name: "Adeptos Virtuales", nickname: "Ciberpunks, Tecnomantes", focus: "La información es Realidad. La tecnología y los datos son sus herramientas para alterar el consenso.", spheres: ["Cardinal", "Correspondencia", "Materia"], background: "Nacidos de la Orden de Hermes y la ciencia del Diferente Stephen, los Adeptos Virtuales fueron los primeros en ver el potencial de la Red Digital como un nuevo reino de conciencia. Creen que la humanidad está destinada a evolucionar más allá de la carne, ascendiendo a un estado de información pura. Para ellos, la Ascensión es la carga final de la conciencia a la Red.", appearance: "Su estilo es una mezcla de alta tecnología y moda callejera. Llevan gafas de datos, ropa con circuitos luminosos y modificaciones cibernéticas visibles. Siempre están conectados.", organization: "Descentralizada y meritocrática, como la propia Red. Se organizan en nodos y foros virtuales. El estatus se gana a través de la habilidad para manipular datos y la reputación en línea.", haven: "Nodos de servidores, cibercafés de alta gama, apartamentos inteligentes o realidades virtuales personalizadas. Su 'refugio' a menudo no es un lugar físico." }, coro_celestial: { name: "Coro Celestial", nickname: "Coristas, Profetas", focus: "Existe una única Verdad y un único Canto divino. Unen sus voces y fe para crear milagros que refuercen la fe y unan a la humanidad.", spheres: ["Cardinal", "Mente", "Fuerzas"], background: "Con raíces en las grandes religiones monoteístas del mundo, el Coro Celestial cree que toda la Creación emana de una única fuente divina y resuena con una Canción primordial. Su magia es un acto de fe, canalizando el poder de lo Uno para inspirar, sanar y proteger a la humanidad, guiándola hacia una futura unidad espiritual.", appearance: "Suelen vestir de forma modesta y a menudo conservadora, con ropas que reflejan su fe pero sin ser ostentosas. Irradian un aura de serenidad y convicción.", organization: "Eclesiástica y jerárquica. Se organizan en coros y diócesis, con una estructura que recuerda a la de una iglesia. La fe y la devoción determinan el rango.", haven: "Iglesias, monasterios, bibliotecas teológicas, centros comunitarios u organizaciones benéficas. Lugares de culto y contemplación." }, culto_del_extasis: { name: "Culto del Éxtasis", nickname: "Sahajiya, Extáticos", focus: "La percepción se altera a través de la experiencia sensorial y los estados alterados de conciencia para trascender los límites de la Realidad.", spheres: ["Tiempo", "Mente", "Vida"], background: "Los Sahajiya, o Cultistas, buscan la Ascensión rompiendo todas las barreras, tanto internas como externas. Utilizan la música, la danza, el sexo, las drogas y las emociones extremas como herramientas para expandir la conciencia, liberarse de las ataduras del ego y experimentar la existencia en su forma más pura y sin filtros.", appearance: "Eclécticos y sensuales. Suelen llevar ropa de diseñador, de festival o cualquier cosa que les permita expresarse libremente. El cuerpo es su lienzo.", organization: "Libre y hedonista. Se agrupan en torno a 'fiestas' o 'festivales' y líderes carismáticos. No hay una jerarquía formal, solo un respeto por la experiencia y la intensidad.", haven: "Clubes nocturnos, estudios de música, comunas artísticas o cualquier lugar donde puedan explorar los límites de la percepción sin ser molestados." }, cuentasuenos: { name: "Cuentasueños", nickname: "Chamanes, Caminantes Espirituales", focus: "El mundo de los espíritus es tan real, o más, que el físico. La sabiduría se encuentra en la conexión con la Umbra y sus habitantes.", spheres: ["Espíritu", "Cardinal", "Vida"], background: "Herederos de las tradiciones chamánicas de todos los continentes, los Cuentasueños sirven como mediadores entre el mundo físico y la Umbra, el reino espiritual. Creen que todo tiene un espíritu y que la desconexión de la humanidad con este mundo es la raíz de todo sufrimiento. Su deber es tejer las historias del mundo y mantener el equilibrio.", appearance: "Ropas hechas de materiales naturales, con abalorios, plumas y tatuajes rituales que cuentan su historia y sus viajes espirituales.", organization: "Tribal y basada en el respeto a los ancianos y los espíritus. Se organizan en pequeñas comunidades o viajan solos, siguiendo los dictados del mundo espiritual.", haven: "Lugares con una fuerte conexión con la Umbra: reservas naturales, ruinas antiguas, círculos de piedras o simplemente el desierto bajo las estrellas." }, eutanatos: { name: "Eutánatos", nickname: "Chakravanti, Hijos de la Rueda", focus: "Todo tiene un ciclo de vida, muerte y renacimiento. Estudian y guían el destino y la entropía para asegurar una 'Buena Muerte' y la continuación del ciclo cósmico.", spheres: ["Entropía", "Mente", "Materia"], background: "Malinterpretados como 'magos de la muerte', los Eutánatos son en realidad los guardianes del Gran Ciclo. Con orígenes en la India y el Mediterráneo, creen que todo, desde una vida hasta una estrella, debe terminar para que algo nuevo pueda nacer. A veces, deben intervenir para cortar un hilo de vida corrupto o ayudar a un alma atascada a continuar su viaje.", appearance: "Su estilo varía desde el luto formal occidental hasta los ropajes de ascetas hindúes. A menudo llevan consigo un aire de solemnidad y fatalismo.", organization: "Se dividen en castas o facciones según su enfoque del ciclo de la muerte (los que sanan, los que destruyen, los que estudian). La experiencia y la sabiduría son muy respetadas.", haven: "Funerarias, cementerios, hospitales, laboratorios de ciencias forenses o templos apartados en lugares como la India o Grecia." }, hermandad_akashica: { name: "Hermandad Akáshica", nickname: "Akashitas", focus: "La mente y el cuerpo son uno. La perfección física y mental (Do) permite al mago trascender la Realidad a través de la disciplina y el control interno.", spheres: ["Mente", "Vida", "Tiempo"], background: "Provenientes de monasterios y dojos de Asia, los Akashitas son artistas marciales, filósofos y ascetas. Creen que el universo es una manifestación de la mente (el Akasha) y que a través del dominio del propio cuerpo y espíritu, uno puede alcanzar la iluminación y remodelar el Tapiz de la Realidad.", appearance: "Sencilla y funcional. Ropas de artes marciales, túnicas de monje o ropa de calle cómoda que permita el movimiento. Su físico suele estar en óptimas condiciones.", organization: "Jerarquía basada en la maestría del Do. Se organizan en dojos y monasterios bajo la guía de un maestro o sifu. La disciplina y el respeto son primordiales.", haven: "Dojos de artes marciales, templos remotos en las montañas, centros de meditación o gimnasios urbanos." }, hijos_del_eter: { name: "Hijos del Éter", nickname: "Etheritas, Científicos Locos", focus: "La ciencia 'loca' y las teorías audaces pueden reescribir la Realidad. Celebran la invención, la inspiración y el progreso sin los límites de la ciencia consensual.", spheres: ["Materia", "Fuerzas", "Cardinal"], background: "Originalmente una facción de la Tecnocracia, los Hijos del Éter desertaron cuando su creencia en el 'Éter' fue descartada. Son los inventores audaces, los científicos locos y los exploradores que construyen maravillas con engranajes, vapor y teorías que la ciencia convencional considera imposibles. Buscan un futuro más brillante e inspirado.", appearance: "Estilo victoriano o eduardiano, con gafas de aviador, batas de laboratorio y artilugios extraños. Aman los engranajes, el latón y los tubos de vacío.", organization: "Clubes de caballeros y sociedades de inventores. Se organizan en equipos de investigación y valoran la genialidad y la innovación por encima de todo.", haven: "Laboratorios caóticos llenos de inventos a medio terminar, observatorios, talleres o hangares de zepelines." }, orden_de_hermes: { name: "Orden de Hermes", nickname: "Herméticos", focus: "La magia es una ciencia esotérica y formal, regida por leyes herméticas, lenguajes arcanos y rituales complejos.", spheres: ["Fuerzas", "Materia", "Mente"], background: "La más antigua, orgullosa y estructurada de las Tradiciones, la Orden de Hermes desciende de los magos de la antigüedad clásica y el antiguo Egipto. Ven la magia como una ciencia precisa que puede ser dominada a través del estudio riguroso, la disciplina y el dominio de rituales arcanos. Fueron los arquitectos del Concilio de las Tradiciones.", appearance: "Formal y académica. Túnicas rituales ornamentadas, trajes de tweed o cualquier cosa que proyecte erudición y autoridad. A menudo tienen un aire altivo.", organization: "Altamente estructurada en 'Casas' y rangos académicos (Aprendiz, Discípulo, Adepto, Maestro). La política interna es compleja y a menudo despiadada.", haven: "Bibliotecas antiguas, universidades, mansiones con grandes estudios o capillas fuertemente protegidas y llenas de artefactos." }, verbena: { name: "Verbena", nickname: "Brujas, Vitalistas", focus: "La sangre y la vida son la fuente de toda magia. Practican la brujería primordial, el chamanismo y el culto a la naturaleza.", spheres: ["Vida", "Entropía", "Cardinal"], background: "Las Verbena son las herederas de las tradiciones paganas de Europa, las brujas y druidas que celebran los ciclos de la vida y la muerte. Su magia es visceral, primal y a menudo sangrienta, extrayendo poder directamente de la fuerza vital de la tierra y de sí mismas. Creen en la santidad de la vida en todas sus formas.", appearance: "Natural y terrenal. Ropas de materiales orgánicos, tatuajes tribales, joyería hecha a mano y a menudo van descalzas para sentir la tierra. Suelen tener una presencia intensa y vital.", organization: "Aquelarres y círculos descentralizados. El liderazgo lo suelen ostentar las matriarcas o las más sabias, y toman decisiones en grupo. La comunidad es vital.", haven: "Bosques, círculos de piedras, granjas comunitarias, tiendas de herbolaria o cualquier lugar donde la naturaleza sea fuerte y salvaje." }, tecnocracia: { name: "La Tecnocracia", nickname: "Trajes, Hombres de Negro", focus: "La ciencia, el control y el orden son los únicos caminos válidos. La magia es una superstición peligrosa que debe ser erradicada y reemplazada por tecnología 'iluminada' para proteger a las masas.", spheres: ["Datos", "Ingeniería Primal", "Genética"], background: "La Unión Tecnocrática es la principal antagonista de las Tradiciones. Creen que la humanidad debe ser protegida del caos de la magia a través del control de la Realidad, imponiendo una única visión científica (el Consenso). Se ven a sí mismos como los pastores y protectores de una humanidad que no comprende los peligros que la acechan.", appearance: "Trajes de negocios impecables, uniformes sin insignias, o cualquier atuendo que les permita pasar desapercibidos y proyectar una autoridad anónima.", organization: "Mega-corporativa y paramilitar. Se dividen en Convenciones (Iteración X, Nuevo Orden Mundial, Progenitores, Sindicato, Ingenieros del Vacío) cada una con su propia jerarquía estricta.", haven: "Edificios de oficinas de alta tecnología, laboratorios de investigación, bases subterráneas o cualquier instalación que parezca mundana pero que oculte una operación de alta tecnología." } },
+            spheres_info: { "Cardinal": "Control sobre la energía mágica primordial (Quintesencia).", "Correspondencia": "Dominio del espacio y la conexión.", "Entropía": "Manipulación del azar, destino y decadencia.", "Espíritu": "Interacción con el mundo espiritual (la Umbra).", "Fuerzas": "Control sobre fuerzas como fuego, gravedad, etc.", "Materia": "Transformación de materia inorgánica.", "Mente": "Lectura y control de pensamientos y emociones.", "Tiempo": "Percepción y manipulación del flujo temporal.", "Vida": "Control sobre patrones biológicos.", "Datos": "(Tecnocracia) Manipulación de información digital.", "Ingeniería Primal": "(Tecnocracia) Ciencia 'iluminada' para manipular energía y materia.", "Genética": "(Tecnocracia) Alteración científica de patrones biológicos." }
+        };
+        const MAGE_DATA = {
+            ...MAGE_DATA_BASE,
+            concepts: {
+                aretes: { title: "Los Aretes", content: `<div class="lore-section"><h3 class="text-xl font-bold accent-text mb-2">ARETES: LA MAGIA PERFECCIONADA</h3><p>Un Arete no es un 'hechizo' en el sentido tradicional, sino un Efecto mágico que un mago ha practicado y perfeccionado hasta el punto de poder lanzarlo con mayor facilidad y consistencia. Es la fusión de la voluntad del mago, su conocimiento de las Esferas y su Paradigma personal, todo condensado en un acto repetible. Pensar en ellos como 'macros' mágicos o 'procedimientos estándar' es una buena analogía: reducen la dificultad y el tiempo necesario para lograr un resultado mágico específico y familiar.</p></div>` },
+                esferas: { title: "Las Nueve Esferas", content: `<div class="lore-section"><h3 class="text-xl font-bold accent-text mb-2">LAS NUEVE ESFERAS DE LA MAGIA</h3><p>Las Esferas no son fuentes de poder, sino los 'lenguajes' o 'conceptos' fundamentales con los que un mago Despertado comprende y reescribe la Realidad. Cada punto en una Esfera representa un nivel más profundo de comprensión y control sobre ese aspecto del Tapiz.</p><ul class="list-disc list-inside mt-4 space-y-2">${Object.entries(MAGE_DATA_BASE.spheres_info).filter(([key]) => !["Datos", "Ingeniería Primal", "Genética"].includes(key)).map(([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`).join('')}</ul></div>` },
+                quinta: { title: "Quintaesencia y Paradoja", content: `<div class="lore-section"><h3 class="text-xl font-bold accent-text mb-2">LA DUALIDAD DEL PODER</h3><p><strong>Quintaesencia:</strong> Es la sustancia pura de la Realidad, la energía mágica en su estado más crudo. Los magos la extraen de Fuentes (lugares de poder) y la usan para alimentar sus Efectos más potentes, crear objetos mágicos o incluso para sanar sus cuerpos. Es el combustible del mago.</p><p class="mt-4"><strong>Paradoja:</strong> Es la reacción del Consenso, la realidad durmiente de las masas, contra la magia que la desafía abiertamente (magia 'vulgar'). Cuando un mago altera la Realidad de forma demasiado flagrante, el Tapiz se 'defiende', devolviendo la energía en forma de una fuerza caótica y peligrosa. La Paradoja puede manifestarse como un simple contratiempo, una herida extraña o, en casos graves, atrayendo a los Espíritus de la Paradoja que castigan al mago por su arrogancia.</p></div>` },
+                historia: { title: "La Guerra de la Ascensión", content: `<div class="lore-section space-y-4">
+                    <h3 class="text-2xl font-bold accent-text mb-3">Crónicas Detalladas de la Guerra de la Ascensión</h3>
+                    <div><h4 class="text-xl font-bold text-green-300 mb-2">La Era Mítica: El Despertar del Mundo</h4><p>Antes de la historia documentada, la Realidad era un lienzo en blanco, maleable y fluido. La magia no estaba separada de la existencia; era la existencia. Las creencias colectivas de una humanidad incipiente, los Durmientes, daban forma al mundo. Si una tribu creía en dioses del bosque, estos caminaban entre los árboles. Si temían a los monstruos de las profundidades, estos emergían de las aguas. Los primeros magos, los Despertados, eran aquellos que comprendían este poder de forma innata y podían imponer su voluntad sobre el Tapiz de la Creación. No había Consenso, solo un caos vibrante de posibilidades infinitas.</p></div>
+                    <div><h4 class="text-xl font-bold text-green-300 mb-2">La Orden de la Razón: El Amanecer del Orden</h4><p>Durante la Baja Edad Media, este caos se volvió insostenible. Los Despertados luchaban entre sí, y sus batallas desgarraban el tejido de la Realidad, poniendo en peligro a los Durmientes que tanto dependían de una existencia estable. Un cónclave de magos, principalmente de Europa, decidió que la humanidad necesitaba protección y guía. Postularon que un mundo basado en la lógica, la predictibilidad y la ciencia sería más seguro y próspero para todos. Así nació la <strong class="text-yellow-300">Orden de la Razón</strong>. Su paradigma era radical: la magia no existía, solo leyes naturales aún no descubiertas. Usando la ciencia como su "magia", comenzaron a cazar a las criaturas "supersticiosas", a desacreditar los milagros y a establecer una base de Realidad estática. Su objetivo final: una utopía global donde la humanidad, guiada por ellos, alcanzaría su máximo potencial. Este fue el primer y más exitoso asalto en la Guerra de la Ascensión.</p></div>
+                    <div><h4 class="text-xl font-bold text-green-300 mb-2">El Concilio de las Nueve Tradiciones: Una Alianza Desesperada</h4><p>Frente a la purga sistemática de la Orden de la Razón, los magos místicos de todo el mundo se enfrentaron a la extinción. Chamanes, brujas, alquimistas, cabalistas y maestros de artes místicas, que antes eran rivales, se vieron obligados a unirse. En el año 1466, se convocó el Gran Concilio en la Torre Blanca de la Orden de Hermes. De este cónclave nació el <strong class="text-yellow-300">Concilio de las Nueve Tradiciones Místicas</strong>. Su objetivo era simple: preservar la magia y la libertad de creencia frente al monolito de la Razón. Aunque sus paradigmas y filosofías eran a menudo contradictorios, compartían un enemigo común. La Guerra por la Ascensión se formalizó: ya no era una serie de conflictos aislados, sino una guerra ideológica total por el futuro del alma humana y la propia naturaleza de la Realidad.</p></div>
+                    <div><h4 class="text-xl font-bold text-green-300 mb-2">La Era Industrial y la Tecnocracia: La Victoria del Consenso</h4><p>La Orden de la Razón, ahora rebautizada como la <strong class="text-yellow-300">Unión Tecnocrática</strong>, ganó terreno de manera decisiva durante la Revolución Industrial. El mundo abrazó la máquina, la producción en masa y el empirismo. El Consenso de las masas se inclinó abrumadoramente hacia su paradigma. La magia flagrante, aquella que violaba abiertamente las "leyes de la física", comenzó a ser rechazada por la propia Realidad. Este fenómeno, la respuesta inmune del Tapiz, fue bautizado por los magos como <strong class="text-yellow-300">Paradoja</strong>. Durante esta era, los Hijos del Éter y los Adeptos Virtuales, facciones que creían en una ciencia más inspirada e individualista, abandonaron la Unión Tecnocrática y se unieron, a regañadientes, al Concilio de las Tradiciones. La Tecnocracia, por su parte, se solidificó en sus Convenciones (Nuevo Orden Mundial, Sindicato, Progenitores, Iteración X e Ingenieros del Vacío), convirtiéndose en la fuerza oculta que guía el progreso y el control global en la actualidad.</p></div>
+                    <div><h4 class="text-xl font-bold text-green-300 mb-2">La Era Moderna: Una Guerra Fría Oculta</h4><p>Hoy, la guerra continúa en las sombras. La Tecnocracia ha ganado la batalla por la mente de los Durmientes. La Realidad es estática y el Consenso es científico. Las Tradiciones, diezmadas y fracturadas, luchan una guerra de guerrillas. Operan desde los márgenes de la sociedad, buscando Despertar a nuevos magos y recordando a la humanidad que el universo es mucho más grande y mágico de lo que la ciencia de los "Trajes" permite. Cada acto de magia es un acto de rebelión. Cada alma Despertada es una victoria en una guerra que la mayoría de la humanidad ni siquiera sabe que se está librando.</p></div>
+                </div>` }
             }
+        };
+        // --- FIN: BASES DE DATOS RESTAURADAS ---
 
-            // --- Lógica de Navegación ---
-            function showSection(sectionToShow) {
-                playSound(soundClick);
-                dossierWrapper.classList.add('hidden-section');
-                terminalVWrapper.classList.add('hidden-section');
-                bestiaryWrapper.classList.add('hidden-section');
-                
-                sectionToShow.classList.remove('hidden-section');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+        const views = {
+            dossier: document.getElementById('dossier-wrapper'),
+            terminalV: document.getElementById('terminal-v-wrapper'),
+            vampireBestiary: document.getElementById('vampire-bestiary-wrapper'),
+            magePrelude: document.getElementById('mage-prelude-wrapper'),
+            mageBestiary: document.getElementById('mage-bestiary-wrapper'),
+        };
+        const sounds = {
+            click: document.getElementById('sound-click'),
+            success: document.getElementById('sound-success'),
+            error: document.getElementById('sound-error'),
+        };
+        const goToTopBtn = document.getElementById('go-to-top-btn');
 
-            proceedToTerminalVBtn.addEventListener('click', () => showSection(terminalVWrapper));
-            proceedToBestiaryBtn.addEventListener('click', () => showSection(bestiaryWrapper));
-            returnToDossierBtn.addEventListener('click', () => showSection(dossierWrapper));
-            returnToDossierFromBestiaryBtn.addEventListener('click', () => showSection(dossierWrapper));
-
-
-            // --- Lógica para el Dossier "Diluvio Escarlata" ---
-            function normalizeDossierString(str) {
-                return str.toLowerCase().replace(/\s+de\s+/g, ' ').replace(/\s+/g, ' ').trim();
-            }
-
-            dossierVerifyCodeBtn.addEventListener('click', () => {
-                playSound(soundClick);
-                const userInput = normalizeDossierString(dossierAccessCodeInput.value);
-                const normalizedCorrectCode = normalizeDossierString(DOSSIER_CORRECT_ACCESS_CODE);
-                dossierErrorMessageEl.textContent = ''; 
-                dossierErrorMessageEl.classList.remove('input-error-glitch'); 
-                clearTimeout(dossierGlitchTimeout);
-
-                if (userInput === normalizedCorrectCode) {
-                    missionDetailsContainer.classList.add('visible');
-                    dossierAccessCodeInput.disabled = true;
-                    dossierVerifyCodeBtn.disabled = true;
-                    dossierAccessCodeInput.classList.add('opacity-50');
-                    dossierVerifyCodeBtn.classList.add('opacity-50');
-                    dossierErrorMessageEl.textContent = 'ACCESO CONCEDIDO. DATOS DE MISIÓN DESBLOQUEADOS.';
-                    dossierErrorMessageEl.classList.remove('text-red-500');
-                    dossierErrorMessageEl.classList.add('text-green-400');
-                    playSound(soundSuccess);
+        function playSound(sound) { if (sound) { sound.currentTime = 0; sound.play().catch(e => {}); } }
+        function showView(viewToShow) {
+            playSound(sounds.click);
+            Object.values(views).forEach(v => v.classList.add('hidden-section'));
+            if(views[viewToShow]) views[viewToShow].classList.remove('hidden-section');
+            window.scrollTo(0, 0);
+        }
+        document.getElementById('proceed-to-terminal-v-btn').addEventListener('click', () => showView('terminalV'));
+        document.getElementById('proceed-to-bestiary-btn').addEventListener('click', () => showView('vampireBestiary'));
+        document.getElementById('proceed-to-mage-files-btn').addEventListener('click', () => showView('magePrelude'));
+        document.getElementById('return-to-dossier-btn-1').addEventListener('click', () => showView('dossier'));
+        document.getElementById('return-to-dossier-btn-2').addEventListener('click', () => showView('dossier'));
+        document.getElementById('return-to-dossier-btn-3').addEventListener('click', () => showView('dossier'));
+        document.getElementById('return-to-dossier-btn-4').addEventListener('click', () => showView('dossier'));
+        document.getElementById('mage-access-bestiary-btn').addEventListener('click', () => showView('mageBestiary'));
+        
+        window.onscroll = function() {
+            if (!views.dossier.classList.contains('hidden-section')) {
+                if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                    goToTopBtn.style.display = "block";
                 } else {
-                    dossierErrorMessageEl.textContent = 'CÓDIGO INCORRECTO. ACCESO DENEGADO.';
-                    dossierErrorMessageEl.classList.remove('text-green-400');
-                    dossierErrorMessageEl.classList.add('text-red-500', 'input-error-glitch');
-                    missionDetailsContainer.classList.remove('visible');
-                    playSound(soundError);
-                    dossierGlitchTimeout = setTimeout(() => dossierErrorMessageEl.classList.remove('input-error-glitch'), 500); 
+                    goToTopBtn.style.display = "none";
                 }
+            } else {
+                goToTopBtn.style.display = "none";
+            }
+        };
+        goToTopBtn.addEventListener('click', () => {
+            playSound(sounds.click);
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        });
+        
+        const terminalVInputs = Array.from(document.querySelectorAll('#numeric-date-inputs .date-char-input'));
+        terminalVInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value && index < terminalVInputs.length - 1) terminalVInputs[index + 1].focus();
             });
-
-            function updateDossierPuzzleCountdown() {
-                const now = new Date().getTime();
-                const distance = DOSSIER_TARGET_DATE_TIMESTAMP - now;
-                if (distance < 0) {
-                    clearInterval(dossierPuzzleCountdownInterval);
-                    const countdownTimerEl = document.getElementById('puzzle-countdown-timer');
-                    if (countdownTimerEl) countdownTimerEl.innerHTML = "<p class='text-2xl text-red-500'>TIEMPO EXPIRADO. EVENTO EN CURSO.</p>";
-                    return;
-                }
-                const totalSecondsRemaining = Math.floor(distance / 1000);
-                const hours = Math.floor(totalSecondsRemaining / 3600);
-                const minutes = Math.floor((totalSecondsRemaining % 3600) / 60);
-                const seconds = totalSecondsRemaining % 60;
-                if(dossierHoursEl) dossierHoursEl.textContent = String(hours).padStart(2, '0');
-                if(dossierMinutesEl) dossierMinutesEl.textContent = String(minutes).padStart(2, '0');
-                if(dossierSecondsEl) dossierSecondsEl.textContent = String(seconds).padStart(2, '0');
-            }
-            if(dossierHoursEl) {
-                 updateDossierPuzzleCountdown();
-                 dossierPuzzleCountdownInterval = setInterval(updateDossierPuzzleCountdown, 1000); 
-            }
-
-            // --- Lógica para la "Terminal de Datos V" ---
-            terminalVDateInputs.forEach((input, index) => {
-                input.addEventListener('input', (e) => {
-                    if (!/^\d?$/.test(e.target.value)) { e.target.value = ''; return; }
-                    if (e.target.value.length > 1) { e.target.value = e.target.value.slice(0, 1); }
-                    if (e.target.value.length === 1 && index < terminalVDateInputs.length - 1) {
-                        terminalVDateInputs[index + 1].focus();
-                    }
-                });
-                input.addEventListener('keydown', (e) => {
-                    if (!((e.keyCode >= 48 && e.keyCode <= 57) || (e.keyCode >= 96 && e.keyCode <= 105) || ['Backspace', 'Delete', 'Tab'].includes(e.key) || e.key.startsWith('Arrow'))) {
-                        e.preventDefault();
-                    }
-                    if (e.key === 'Backspace' && e.target.value.length === 0 && index > 0) {
-                        terminalVDateInputs[index - 1].focus();
-                    }
-                });
-            });
-
-            function constructNumericDateFromTerminalVInputs(inputsArr) {
-                return inputsArr.map(input => input.value).join('');
-            }
-
-            function stringToBinaryForTerminalV(str) { 
-                return str.split('').map(char => char.charCodeAt(0).toString(2).padStart(8, '0')).join(' ');
-            }
-
-            function disableTerminalVInputs() {
-                terminalVDateInputs.forEach(input => { input.disabled = true; input.classList.add('opacity-50'); });
-                terminalVVerifyDateBtn.disabled = true; terminalVVerifyDateBtn.classList.add('opacity-50');
-            }
-
-            terminalVVerifyDateBtn.addEventListener('click', () => {
-                playSound(soundClick);
-                const userInputDate = constructNumericDateFromTerminalVInputs(terminalVDateInputs);
-                terminalVMessageFeedbackEl.textContent = '';
-                terminalVMessageFeedbackEl.classList.remove('input-error-glitch', 'text-green-400', 'text-red-500');
-                binaryOutputContainerEl.classList.remove('glitch-active-area');
-                binaryOutputTitleEl.textContent = "[INICIO DE TRANSMISIÓN // REGISTRO 02 T]";
-                clearTimeout(terminalVGlitchTimeout);
-
-                if (userInputDate === TERMINAL_V_TARGET_NUMERIC_DATE) {
-                    terminalVMessageFeedbackEl.textContent = 'SECUENCIA CORRECTA. INICIANDO DECODIFICACIÓN...';
-                    terminalVMessageFeedbackEl.classList.add('text-green-400');
-                    playSound(soundSuccess);
-                    const binaryResult = stringToBinaryForTerminalV(TERMINAL_V_MESSAGE_TO_ENCODE); 
-                    binaryCodeContentEl.textContent = binaryResult;
-                    binaryOutputContainerEl.style.display = 'block';
-                    binaryOutputContainerEl.classList.add('glitch-active-area'); 
-                    disableTerminalVInputs();
-                } else {
-                    terminalVMessageFeedbackEl.textContent = 'ERROR: SECUENCIA INCORRECTA. ACCESO DENEGADO.';
-                    terminalVMessageFeedbackEl.classList.add('text-red-500', 'input-error-glitch'); 
-                    binaryOutputContainerEl.style.display = 'none';
-                    binaryCodeContentEl.textContent = '';
-                    playSound(soundError);
-                    terminalVGlitchTimeout = setTimeout(() => terminalVMessageFeedbackEl.classList.remove('input-error-glitch'), 500);
-                }
-            });
-
-            // --- Lógica para el Bestiario ---
-            for (const clanId in V20_DATA.clans) {
-                const clan = V20_DATA.clans[clanId];
-                const gridItem = document.createElement('div');
-                gridItem.className = 'clan-grid-item';
-                gridItem.textContent = clan.name;
-                gridItem.dataset.clanId = clanId;
-                gridItem.addEventListener('click', () => openModal(clanId));
-                clanGrid.appendChild(gridItem);
-            }
-
-            function openModal(clanId) {
-                const clan = V20_DATA.clans[clanId];
-                if (!clan) return;
-                modalClanName.textContent = `[ ${clan.name.toUpperCase()} ]`;
-                modalClanNickname.textContent = clan.nickname || "N/A";
-                modalClanAppearance.textContent = clan.appearance || "N/A";
-                modalClanSightingPoints.textContent = clan.haven || "N/A"; 
-                modalClanOrganization.textContent = clan.organization || "N/A";
-                modalClanBackground.textContent = clan.background;
-                modalClanWeakness.textContent = clan.weakness;
-                modalClanDisciplines.innerHTML = '';
-                clan.disciplines.forEach(discName => {
-                    const discButton = document.createElement('button');
-                    discButton.className = 'discipline-btn';
-                    discButton.textContent = discName;
-                    discButton.dataset.discipline = discName;
-                    discButton.addEventListener('click', (e) => { e.stopPropagation(); showDisciplineTooltip(e, discName); });
-                    modalClanDisciplines.appendChild(discButton);
-                });
-                modal.classList.add('active');
-            }
-
-            function showDisciplineTooltip(event, discName) {
-                const info = V20_DATA.disciplines_info[discName];
-                if (!info) return;
-                tooltip.textContent = info;
-                tooltip.style.display = 'block';
-                const rect = event.target.getBoundingClientRect();
-                let top = rect.bottom + 5;
-                let left = rect.left;
-                if (top + tooltip.offsetHeight > window.innerHeight) { top = rect.top - tooltip.offsetHeight - 5; }
-                if (left + tooltip.offsetWidth > window.innerWidth) { left = window.innerWidth - tooltip.offsetWidth - 10; }
-                tooltip.style.top = `${top}px`;
-                tooltip.style.left = `${left}px`;
-            }
-
-            function hideTooltip() { tooltip.style.display = 'none'; }
-            function closeModal() { modal.classList.remove('active'); hideTooltip(); }
-
-            closeModalBtn.addEventListener('click', closeModal);
-            modal.addEventListener('click', (event) => {
-                if (event.target === modal) { closeModal(); } 
-                else if (!event.target.classList.contains('discipline-btn')) { hideTooltip(); }
-            });
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape' && modal.classList.contains('active')) { closeModal(); }
+             input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) terminalVInputs[index - 1].focus();
             });
         });
+        document.getElementById('terminal-v-verify-date-btn').addEventListener('click', () => {
+            const userInput = terminalVInputs.map(i => i.value).join('');
+            const feedbackEl = document.getElementById('terminal-v-message-feedback');
+            const outputContainer = document.getElementById('binary-output-container');
+            if (userInput === "28062025") {
+                feedbackEl.textContent = 'SECUENCIA CORRECTA. DECODIFICANDO...';
+                feedbackEl.className = 'h-6 mt-2 text-green-400';
+                playSound(sounds.success);
+                const binaryResult = "Eligio Ancona 106 Santa María la Ribera V:".split('').map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join(' ');
+                document.getElementById('binary-code-content').textContent = binaryResult;
+                outputContainer.classList.remove('hidden');
+                outputContainer.classList.add('glitch-active-area');
+            } else {
+                feedbackEl.textContent = 'ERROR: SECUENCIA INCORRECTA.';
+                feedbackEl.className = 'h-6 mt-2 text-red-500 input-error-glitch';
+                playSound(sounds.error);
+                outputContainer.classList.add('hidden');
+                setTimeout(() => feedbackEl.classList.remove('input-error-glitch'), 500);
+            }
+        });
+        
+        const clanModal = document.getElementById('clan-modal');
+        const discTooltip = document.getElementById('discipline-tooltip');
+        Object.entries(V20_DATA.clans).forEach(([id, clan]) => {
+            const item = document.createElement('div');
+            item.className = 'clan-grid-item';
+            item.textContent = clan.name;
+            item.addEventListener('click', () => openClanModal(clan));
+            document.getElementById('clan-grid').appendChild(item);
+        });
+        function openClanModal(clan) {
+            document.getElementById('modal-clan-name').textContent = `[ ${clan.name.toUpperCase()} ]`;
+            document.getElementById('modal-clan-nickname').textContent = clan.nickname;
+            document.getElementById('modal-clan-background').textContent = clan.background;
+            document.getElementById('modal-clan-weakness').textContent = clan.weakness;
+            const discContainer = document.getElementById('modal-clan-disciplines');
+            discContainer.innerHTML = '';
+            clan.disciplines.forEach(discName => {
+                const btn = document.createElement('button');
+                btn.className = 'discipline-btn';
+                btn.textContent = discName;
+                btn.addEventListener('click', (e) => { e.stopPropagation(); showTooltip(discTooltip, V20_DATA.disciplines_info[discName], e.target); });
+                discContainer.appendChild(btn);
+            });
+            clanModal.classList.add('active');
+        }
+        
+        const mageModal = document.getElementById('mage-modal');
+        const sphereTooltip = document.getElementById('sphere-tooltip');
+        Object.entries(MAGE_DATA.traditions).forEach(([id, trad]) => {
+            const item = document.createElement('div');
+            item.className = 'clan-grid-item';
+            item.textContent = trad.name;
+            item.addEventListener('click', () => openMageTraditionModal(trad));
+            document.getElementById('tradition-grid').appendChild(item);
+        });
+        document.getElementById('mage-concepts-grid').addEventListener('click', (e) => {
+            if (e.target.matches('.concept-item')) {
+                openMageConceptModal(MAGE_DATA.concepts[e.target.dataset.concept]);
+            }
+        });
+        // Listener para el nuevo botón de historia expandida
+        document.getElementById('historia-expanded-btn').addEventListener('click', () => {
+            openMageConceptModal(MAGE_DATA.concepts['historia']);
+        });
+
+        function openMageTraditionModal(trad) {
+            document.getElementById('mage-modal-title').textContent = `[ ${trad.name.toUpperCase()} ]`;
+            const body = document.getElementById('mage-modal-body');
+            body.innerHTML = `
+                <h3 class="text-xl font-bold accent-text mb-2">APODO</h3><p>${trad.nickname}</p><div class="section-divider"></div>
+                <h3 class="text-xl font-bold accent-text mb-2">TRASFONDO Y DESCRIPCIÓN</h3><p>${trad.background}</p><div class="section-divider"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+                    <div><h3 class="text-xl font-bold accent-text mb-2">APARIENCIA</h3><p>${trad.appearance}</p></div>
+                    <div><h3 class="text-xl font-bold accent-text mb-2">ORGANIZACIÓN</h3><p>${trad.organization}</p></div>
+                </div><div class="section-divider"></div>
+                <h3 class="text-xl font-bold accent-text mb-2">ENFOQUE Y PARADIGMA</h3><p>${trad.focus}</p><div class="section-divider"></div>
+                <h3 class="text-xl font-bold accent-text mb-2">SANTUARIOS COMUNES</h3><p>${trad.haven}</p><div class="section-divider"></div>
+                <h3 class="text-xl font-bold accent-text mb-2">ESFERAS AFINES</h3><div class="flex flex-wrap gap-2">${trad.spheres.map(s => `<button class="info-btn" data-sphere="${s}">${s}</button>`).join('')}</div>`;
+            body.querySelectorAll('.info-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); showTooltip(sphereTooltip, MAGE_DATA.spheres_info[e.target.dataset.sphere], e.target); }));
+            mageModal.classList.add('active');
+        }
+        function openMageConceptModal(concept) {
+            document.getElementById('mage-modal-title').textContent = `[ ${concept.title.toUpperCase()} ]`;
+            document.getElementById('mage-modal-body').innerHTML = `${concept.content}`;
+            mageModal.classList.add('active');
+        }
+
+        function showTooltip(tooltipEl, text, targetEl) {
+            tooltipEl.textContent = text;
+            tooltipEl.style.display = 'block';
+            const rect = targetEl.getBoundingClientRect();
+            tooltipEl.style.left = `${rect.left}px`;
+            tooltipEl.style.top = `${rect.bottom + 5}px`;
+        }
+        function hideAllTooltips() {
+            discTooltip.style.display = 'none';
+            sphereTooltip.style.display = 'none';
+        }
+        function closeModal() {
+            clanModal.classList.remove('active');
+            mageModal.classList.remove('active');
+            hideAllTooltips();
+        }
+        document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', (e) => { if (e.target === m) closeModal(); }));
+        document.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', closeModal));
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+        document.body.addEventListener('click', (e) => {
+            if (!e.target.matches('.discipline-btn, .info-btn')) hideAllTooltips();
+        });
+
+    });
     </script>
 </body>
 </html>
